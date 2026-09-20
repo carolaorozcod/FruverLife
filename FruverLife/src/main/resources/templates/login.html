@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Surtifruver</title>
+    <link rel="stylesheet" th:href="@{/login.css}">
+</head>
+<body>
+
+<div class="body"></div>
+<div class="grad"></div>
+
+<div class="container">
+
+    <div class="header">
+        Fruver<span>Life</span>
+    </div>
+    <div th:if="${error}" style="color:red;">
+        <p th:text="${error}"></p>
+    </div>
+    <div class="login">
+        <form th:action="@{/auth/login}" method="post">
+            <input type="text" name="usuario" placeholder="Usuario" required>
+            <input type="password" name="contrasena" placeholder="Contraseña" required>
+            <button type="submit">Iniciar sesión</button>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

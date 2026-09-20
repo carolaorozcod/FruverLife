@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="contenido">
+
+    <!-- MENSAJES -->
+    <div th:if="${session.errorVenta}"
+         style="color:red;
+                font-weight:bold;
+                margin-bottom:15px;
+                background:#ffe5e5;
+                padding:10px;
+                border-radius:10px;">
+
+        <p th:text="${session.errorVenta}"></p>
+    </div>
+
+    <div th:if="${session.mensajeVenta}"
+         style="color:green;
+                font-weight:bold;
+                margin-bottom:15px;
+                background:#e8ffe8;
+                padding:10px;
+                border-radius:10px;">
+
+        <p th:text="${session.mensajeVenta}"></p>
+    </div>
+
+    <div class="ventas-layout">
+
+        <!-- IZQUIERDA -->
+        <div class="left-panel">
+
+            <!-- BUSCAR CLIENTE -->
+            <section class="client-section">
+
+                <h2>Buscar Cliente</h2>
+
+                <form th:action="@{/ventas/buscarCliente}" method="post">
+
+                    <label>Documento Cliente:</label>
+
+                    <input type="number"
+                           name="identificacion"
+                           placeholder="Ingrese documento"
+                           required>
+
+                    <button type="submit" class="btn-principal">
+                        Buscar Cliente
+                    </button>
+
+                </form>
+
+            </section>
+
+            <!-- AGREGAR PRODUCTO -->
+            <section class="form-section">
+
+                <h2>Agregar Producto</h2>
+
+                <form th:action="@{/ventas/agregar}" method="post">
+
+                    <label>Código Producto:</label>
+
+                    <input type="number"
+                           name="codigo"
+                           placeholder="Ingrese código"
+                           required>
+
+                    <label>Cantidad:</label>
+
+                    <input type="number"
+                           name="cantidad"
+                           placeholder="Ingrese cantidad"
+                           required>
+
+                    <button type="submit" class="btn-principal">
+                        Agregar al Carrito
+                    </button>
+
+                </form>
+
+            </section>
+
+        </div>
+
+        <!-- DERECHA -->
+        <section class="table-box">
+
+            <div class="table-header">
+
+                <h2>Carrito de Compras</h2>
+
+                <div class="client-name" th:if="${cliente != null}">
+                    Cliente:
+                    <span th:text="${cliente.nombre}"></span>
+                </div>
+
+            </div>
+
+            <!-- TABLA -->
+            <table class="tabla">
+
+                <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                    <th>Acción</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr th:each="d, estado : ${carrito}">
+
+                    <td th:text="${d.producto.codigo}"></td>
+
+                    <td th:text="${d.producto.nombre}"></td>
+
+                    <td th:text="${d.cantidad}"></td>
+
+                    <td th:text="${d.precio}"></td>
+
+                    <td th:text="${d.subtotal}"></td>
+
+                    <td>
+                        <a th:href="@{/ventas/eliminar/{i}(i=${estado.index})}"
+                           class="btn-eliminar">
+                            Eliminar
+                        </a>
+                    </td>
+
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(carrito)}">
+                    <td colspan="6">
+                        No hay productos en el carrito
+                    </td>
+                </tr>
+
+                </tbody>
+
+            </table>
+
+            <!-- TOTAL -->
+            <div class="total">
+
+                <h3>Total:</h3>
+
+                <span>
+                    $
+                    <span th:text="${total}">0</span>
+                </span>
+
+            </div>
+
+            <!-- FINALIZAR -->
+            <form th:action="@{/ventas/finalizar}" method="post">
+
+                <button type="submit" class="btn-principal">
+                    Finalizar Venta
+                </button>
+
+            </form>
+
+        </section>
+
+    </div>
+
+</div>
+
+</body>
+</html>

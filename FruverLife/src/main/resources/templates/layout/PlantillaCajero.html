@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Menú Cajero</title>
+
+    <link rel="stylesheet" th:href="@{/EstiloAdmi.css?v=7}">
+
+</head>
+
+<body>
+
+<div class="Administrador">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="barra">
+
+        <nav class="Acciones">
+
+            <!-- PERFIL -->
+            <div class="perfil">
+
+                <h2 class="logo">
+                    <span class="blanco">Fruver</span>
+                    <span class="verde">Life</span>
+                </h2>
+
+                <div class="info-usuario">
+                    <span th:text="${session.usuarioLogueado?.usuario}"></span>
+                    <small th:text="${session.usuarioLogueado?.cargo}"></small>
+                </div>
+
+            </div>
+
+            <!-- MENÚ -->
+            <ul>
+
+                <li>
+                    <a th:href="@{/menu/clientes}">Registrar Cliente</a>
+                </li>
+
+                <li>
+                    <a th:href="@{/menu/ventas}">
+                        Realizar venta
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/menu/precio}">
+                        Verificar precio
+                    </a>
+                </li>
+
+            </ul>
+
+            <!-- CERRAR SESIÓN -->
+            <a href="/auth/logout" class="cerrar-sesion">
+                Cerrar Sesión
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <!-- ===== CONTENIDO DINÁMICO ===== -->
+    <main class="contenido">
+        <div th:replace="~{${contenido} :: contenido}"></div>
+    </main>
+</div>
+
+</body>
+</html>

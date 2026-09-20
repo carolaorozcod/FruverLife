@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="contenido">
+  <div class="contenedor-flex">
+
+
+    <div class="contenedor formulario">
+      <h2>Registro de Usuario</h2>
+      <form th:action="@{/usuarios/guardar}" th:object="${usuarioForm}" method="post">
+        <input type="hidden" th:field="*{idUsuario}" />
+        <label>Usuario:</label>
+        <input type="text" th:field="*{usuario}" placeholder="Usuario" required />
+        <label>Contraseña:</label>
+        <div class="password-box" style="position: relative;">
+          <input type="password"
+                 id="contrasena"
+                 th:field="*{contrasena}"
+                 placeholder="Contraseña"
+                 required
+                 style="width: 100%; padding-right: 45px;">
+
+          <span onclick="togglePassword()"
+                style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+            👁
+        </span>
+        </div>
+        <label>Cargo:</label>
+        <select th:field="*{cargo}" required>
+          <option value="">Seleccione</option>
+          <option value="Gerente">Gerente</option>
+          <option value="Cajero">Cajero</option>
+          <option value="Administrador">Administrador</option>
+        </select>
+
+        <button type="submit">
+          <span th:if="${usuarioForm.idUsuario == null}">Registrar</span>
+          <span th:if="${usuarioForm.idUsuario != null}">Guardar cambios</span>
+        </button>
+      </form>
+
+      <script>
+        function togglePassword() {
+            const input = document.getElementById("contrasena");
+
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
+      </script>
+
+      <!-- Bloque de alertas -->
+      <div th:if="${mensaje}" style="color:green; margin-top:10px;">
+        <p th:text="${mensaje}"></p>
+      </div>
+
+      <div th:if="${error}" style="color:red; margin-top:10px;">
+        <p th:text="${error}"></p>
+      </div>
+    </div>
+
+    <!-- TABLA DE USUARIOS -->
+    <div class="table-box tabla-usuarios">
+      <h2>Usuarios Registrados</h2>
+      <table class="tabla">
+        <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Contraseña</th>
+          <th>Cargo</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${usuarios}">
+          <td th:text="${user.usuario}"></td>
+          <td th:text="${user.contrasena}"></td>
+          <td th:text="${user.cargo}"></td>
+          <td th:text="${user.estado}"></td>
+          <td>
+            <a th:href="@{'/usuarios/editar/' + ${user.idUsuario}}" class="btn-editar">Editar</a>
+            <a th:href="@{'/usuarios/eliminar/' + ${user.idUsuario}}" class="btn-eliminar">Inactivar</a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(usuarios)}">
+          <td colspan="4" style="text-align:center;">No hay usuarios registrados</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

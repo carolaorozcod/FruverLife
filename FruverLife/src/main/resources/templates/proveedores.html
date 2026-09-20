@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="contenido">
+
+    <h2>Registro de Proveedores</h2>
+
+    <div class="contenedor-proveedores">
+
+        <!-- FORMULARIO -->
+        <div class="formulario">
+
+            <form id="formProveedor">
+
+                <label>NIT:</label>
+                <input type="text" name="nit" required>
+
+                <label>Nombre:</label>
+                <input type="text" name="nombre" required>
+
+                <label>Número:</label>
+                <input type="text" name="numero" required>
+
+                <label>Correo:</label>
+                <input type="email" name="correo" required>
+
+                <button type="submit" id="btnAccion">
+                    Registrar
+                </button>
+
+                <button type="button" onclick="cancelarEdicion()">
+                    Cancelar
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- TABLA -->
+        <div class="lista">
+
+            <h2>Proveedores Registrados</h2>
+
+            <table>
+
+                <thead>
+                <tr>
+                    <th>NIT</th>
+                    <th>Nombre</th>
+                    <th>Número</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+
+                <tbody id="tablaProveedores"></tbody>
+
+            </table>
+
+            <div id="mensajeTabla" class="mensaje-tabla"></div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        let idEditando = null;
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            cargarProveedores();
+
+            const form = document.getElementById("formProveedor");
+
+            form.addEventListener("submit", function (e) {
+
+                e.preventDefault();
+
+                const datos = new FormData(this);
+
+                let url = "/proveedores/guardar";
+
+                if (idEditando !== null) {
+                    url = "/proveedores/editar/" + idEditando;
+                }
+
+                fetch(url, {
+                    method: "POST",
+                    body: datos
+                })
+                .then(r => r.text())
+                .then(msg => {
+
+                    mostrarMensaje(msg, "exito");
+
+                    form.reset();
+
+                    idEditando = null;
+
+                    document.getElementById("btnAccion")
+                        .innerText = "Registrar";
+
+                    cargarProveedores();
+                });
+
+            });
+
+        });
+
+        function mostrarMensaje(texto, tipo) {
+
+            const div = document.getElementById("mensajeTabla");
+
+            div.innerText = texto;
+
+            div.className = "mensaje-tabla " + tipo;
+
+            div.style.display = "block";
+
+            setTimeout(() => {
+                div.style.display = "none";
+            }, 3000);
+        }
+
+        function cargarProveedores() {
+
+            fetch("/proveedores/listar")
+            .then(r => r.json())
+            .then(data => {
+
+                const tabla = document.getElementById("tablaProveedores");
+
+                tabla.innerHTML = "";
+
+                data.forEach(p => {
+
+                    tabla.innerHTML += `
+                        <tr>
+
+                            <td>${p.nit}</td>
+                            <td>${p.nombre}</td>
+                            <td>${p.numero}</td>
+
+                            <td>
+
+                                <button class="btn-editar"
+                                    onclick='editar(
+                                        ${p.idProveedor},
+                                        "${p.nit}",
+                                        "${p.nombre}",
+                                        "${p.numero}",
+                                        "${p.correo}"
+                                    )'>
+
+                                    ✏ Editar
+
+                                </button>
+
+                                <button class="btn-eliminar"
+                                    onclick="eliminar(${p.idProveedor})">
+
+                                    🗑 Eliminar
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+                    `;
+                });
+
+            });
+
+        }
+
+        function editar(id, nit, nombre, numero, correo) {
+
+            idEditando = id;
+
+            document.querySelector("input[name='nit']").value = nit;
+            document.querySelector("input[name='nombre']").value = nombre;
+            document.querySelector("input[name='numero']").value = numero;
+            document.querySelector("input[name='correo']").value = correo;
+
+            document.getElementById("btnAccion")
+                .innerText = "Guardar cambios";
+        }
+
+        function cancelarEdicion() {
+
+            document.getElementById("formProveedor").reset();
+
+            idEditando = null;
+
+            document.getElementById("btnAccion")
+                .innerText = "Registrar";
+        }
+
+        function eliminar(id) {
+
+            fetch("/proveedores/eliminar/" + id, {
+                method: "DELETE"
+            })
+            .then(r => r.text())
+            .then(msg => {
+
+                mostrarMensaje(msg, "exito");
+
+                cargarProveedores();
+            });
+
+        }
+
+    </script>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<div th:fragment="contenido">
+
+    <h2>Gestión de Productos</h2>
+
+    <!-- MENSAJES -->
+    <div th:if="${mensaje}" class="mensaje-tabla exito">
+        <span th:text="${mensaje}"></span>
+    </div>
+
+    <div th:if="${error}" class="mensaje-tabla error">
+        <span th:text="${error}"></span>
+    </div>
+
+    <div class="contenedor-proveedores">
+
+        <!-- FORMULARIO -->
+        <div class="formulario">
+
+            <form th:action="@{/productos/guardar}" method="post">
+
+                <!-- ID oculto para editar -->
+                <input type="hidden" name="idProducto"
+                       th:value="${producto != null ? producto.idProducto : ''}">
+
+                <label>Código:</label>
+
+                <input type="text"
+                       name="codigo"
+                       th:value="${producto != null ? producto.codigo : ''}"
+                       required>
+
+                <label>Nombre:</label>
+
+                <input type="text"
+                       name="nombre"
+                       th:value="${producto != null ? producto.nombre : ''}"
+                       required>
+
+                <label>Precio:</label>
+
+                <input type="number"
+                       name="precio"
+                       th:value="${producto != null ? producto.precio : ''}"
+                       required>
+
+                <label>Cantidad:</label>
+
+                <input type="number" step="0.01"
+                       name="cantidad"
+                       th:value="${producto != null ? producto.cantidad : 0}"
+                       readonly>
+
+                <button type="submit" id="btnAccion">
+
+                    <span th:if="${producto == null}">
+                        Registrar
+                    </span>
+
+                    <span th:if="${producto != null}">
+                        Guardar cambios
+                    </span>
+
+                </button>
+
+                <a th:href="@{/menu/gestion}"   class="btn-cancelar">
+                    Cancelar
+                </a>
+
+            </form>
+
+        </div>
+
+        <!-- TABLA -->
+        <div class="lista">
+
+            <h2>Productos Registrados</h2>
+
+            <table>
+
+                <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr th:each="p : ${productos}">
+
+                    <td th:text="${p.codigo}"></td>
+
+                    <td th:text="${p.nombre}"></td>
+
+                    <td th:text="${p.cantidad}"></td>
+
+                    <td>
+                        $ <span th:text="${p.precio}"></span>
+                    </td>
+
+                    <td>
+
+                        <a th:href="@{'/productos/editar/' + ${p.idProducto}}">
+
+                            <button type="button" class="btn-editar">
+                                ✏ Editar
+                            </button>
+
+                        </a>
+
+                        <a th:href="@{'/productos/eliminar/' + ${p.idProducto}}">
+
+                            <button type="button" class="btn-eliminar">
+                                🗑 Eliminar
+                            </button>
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

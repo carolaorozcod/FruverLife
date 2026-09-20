@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Factura de Venta</title>
+    <link rel="stylesheet" th:href="@{/EstiloAdmi.css}">
+</head>
+<body>
+
+<div class="factura-box">
+
+    <h1>FruverLife</h1>
+    <h2>Factura de Venta</h2>
+
+    <p><strong>N° Factura:</strong> <span th:text="${venta.idVenta}"></span></p>
+    <p><strong>Fecha:</strong> <span th:text="${#temporals.format(venta.fecha, 'dd/MM/yyyy HH:mm')}"></span></p>
+    <p><strong>Cliente:</strong> <span th:text="${venta.cliente.nombre}"></span></p>
+    <p><strong>Cajero:</strong> <span th:text="${venta.usuario.usuario}"></span></p>
+
+    <table class="tabla">
+        <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="d : ${detalles}">
+            <td th:text="${d.producto.nombre}"></td>
+            <td th:text="${d.cantidad}"></td>
+            <td th:text="'$ ' + ${d.precio}"></td>
+            <td th:text="'$ ' + ${d.subtotal}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2>Total: $ <span th:text="${venta.total}"></span></h2>
+
+    <button onclick="window.print()">Imprimir Factura</button>
+
+    <a th:href="@{/menu/ventas}" class="btn-principal">Volver a ventas</a>
+
+</div>
+
+</body>
+</html>

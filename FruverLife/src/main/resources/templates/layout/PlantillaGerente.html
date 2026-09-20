@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Menú Gerente</title>
+
+    <!-- CSS base unificado -->
+    <link rel="stylesheet" th:href="@{/EstiloAdmi.css?v=7}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+<div class="Administrador"> <!-- Clase unificada para aplicar CSS base -->
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="barra">
+        <nav class="Acciones">
+        <div class="perfil">
+            <h2 class="logo">
+                <span class="blanco">Fruver</span>
+                <span class="verde">Life</span>
+            </h2>
+
+            <div class="info-usuario">
+                <span th:text="${session.usuarioLogueado?.usuario}"></span>
+                <small th:text="${session.usuarioLogueado?.cargo}"></small>
+            </div>
+        </div>
+
+
+            <ul>
+                <li><a th:href="@{/menu/informemer}">Informe de mercancía</a></li>
+                <li><a th:href="@{/menu/informe-diario}">Informe Diario</a></li>
+                <li><a th:href="@{/menu/informedes}">Informe de Desperdicios</a></li>
+                <li><a th:href="@{/menu/usuarios}"> Registro de Usuario</a></li>
+            </ul>
+            <a href="/auth/logout" class="cerrar-sesion">Cerrar Sesión</a>
+        </nav>
+
+    </aside>
+
+    <!-- ===== CONTENIDO DINÁMICO ===== -->
+    <main class="contenido">
+        <!-- Aquí Thymeleaf inyecta los fragments -->
+        <div th:replace="~{${contenido} :: contenido}"></div>
+    </main>
+
+</div>
+
+</body>
+</html>

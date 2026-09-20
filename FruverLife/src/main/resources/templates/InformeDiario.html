@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="contenido">
+
+    <div class="container">
+
+        <div class="informe-top-box">
+
+            <div class="informe-header-card">
+                <div>
+                    <h1>Informe Diario</h1>
+                    <p class="subtitulo-informe">Ventas registradas del día</p>
+                </div>
+
+                <button class="btn-print" onclick="window.print()">
+                    IMPRIMIR REPORTE
+                </button>
+            </div>
+
+            <div class="informe-summary-boxes">
+
+                <div class="informe-summary-card">
+                    <span>TOTAL DE VENTAS</span>
+                    <h2 th:text="${cantidadVentas}">0</h2>
+                </div>
+
+                <div class="informe-summary-card">
+                    <span>TOTAL RECAUDADO</span>
+                    <h2 th:text="'$ ' + ${totalDia}">$ 0</h2>
+                </div>
+
+            </div>
+
+        </div>
+        <div class="grafica-box">
+            <h2>Gráfica de ventas del día</h2>
+
+            <div class="barra-venta" th:each="v : ${ventas}">
+                <div class="barra-info">
+                    <span th:text="'Venta #' + ${v.idVenta}"></span>
+                    <strong th:text="'$ ' + ${v.total}"></strong>
+                </div>
+
+                <div class="barra-fondo">
+                    <div class="barra-relleno"
+                         th:style="'width:' + (${v.total} / ${totalDia} * 100) + '%'">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="table-box">
+
+            <table class="tabla">
+                <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Cajero</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="v : ${ventas}">
+                    <td th:text="${v.cliente.nombre}"></td>
+                    <td th:text="${v.usuario.usuario}"></td>
+                    <td th:text="${#temporals.format(v.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${v.estado}"></td>
+                    <td th:text="'$ ' + ${v.total}"></td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(ventas)}">
+                    <td colspan="6" class="sin-registros">
+                        No hay ventas registradas hoy
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

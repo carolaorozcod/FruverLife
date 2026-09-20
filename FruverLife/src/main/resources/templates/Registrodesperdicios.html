@@ -1,0 +1,122 @@
+<div class="contenido-desperdicios" th:fragment="contenido">
+
+  <div class="card-desperdicio">
+
+    <h2>Registro de Desperdicios</h2>
+    <div th:if="${error}"
+         style="color:red; font-weight:bold; background:#ffe5e5; padding:10px; border-radius:10px; margin-bottom:15px;">
+      <p th:text="${error}"></p>
+    </div>
+
+    <div th:if="${mensaje}"
+         style="color:green; font-weight:bold; background:#e8ffe8; padding:10px; border-radius:10px; margin-bottom:15px;">
+      <p th:text="${mensaje}"></p>
+    </div>
+
+    <div class="grid-desperdicio">
+
+      <!-- FORMULARIO -->
+      <div class="form-box">
+
+        <!-- BUSCAR -->
+        <form th:action="@{/desperdicios/buscar}" method="post" class="form">
+
+          <label>Código Producto</label>
+          <input type="number" name="codigo"
+                 th:value="${producto?.codigo}"
+                 placeholder="Ingrese código">
+
+          <button type="submit" class="btn-secundario">Buscar</button>
+
+        </form>
+
+        <!-- REGISTRAR -->
+        <form th:action="@{/desperdicios/guardar}" method="post" class="form">
+
+          <input type="hidden" name="codigo" th:value="${producto?.codigo}">
+
+          <label>Nombre Producto</label>
+          <input type="text" th:value="${producto?.nombre}" readonly>
+
+          <label>Cantidad Averiada</label>
+          <input type="number" name="cantidad" placeholder="Cantidad">
+
+          <label>Precio</label>
+          <input type="text"
+                 th:value="${producto != null ? '$ ' + producto.precio : '$ 0'}"
+                 readonly>
+
+          <button type="submit"
+                  class="btn-principal"
+                  th:disabled="${producto == null}">
+            Agregar Desperdicio
+          </button>
+
+        </form>
+
+      </div>
+
+      <!-- TABLA -->
+      <div class="table-box">
+
+        <h3>Desperdicios Registrados</h3>
+
+        <table class="tabla">
+
+          <thead>
+          <tr>
+            <th>Código</th>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Detalle (Cantidad / Producto)</th>
+            <th>Total</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+
+          <tbody>
+
+          <tr th:each="reg : ${registros}">
+            <td th:text="${reg.idRegistro}"></td>
+            <td th:text="${reg.fecha}"></td>
+            <td th:text="${reg.usuario}"></td>
+
+            <td>
+              <div th:each="det : ${reg.detalles}">
+                <span th:text="${det.cantidad}"></span>
+                <span> x </span>
+                <span th:text="${det.nombreProducto}"></span>
+                <br>
+              </div>
+            </td>
+
+            <td th:text="'$ ' + ${reg.total}"></td>
+
+            <td>
+              <a th:href="@{/desperdicios/eliminar/{id}(id=${reg.idRegistro})}"
+                 class="btn-eliminar">
+                Eliminar
+              </a>
+            </td>
+          </tr>
+
+          <tr th:if="${#lists.isEmpty(registros)}">
+            <td colspan="6">No hay registros</td>
+          </tr>
+
+          </tbody>
+
+        </table>
+
+        <div class="total">
+          Total Pérdida:
+          <span th:text="${totalGeneral != null ? '$ ' + totalGeneral : '$ 0'}"></span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

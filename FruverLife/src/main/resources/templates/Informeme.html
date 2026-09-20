@@ -1,0 +1,92 @@
+<h1 style="color:red;">ESTOY EDITANDO ESTE ARCHIVO</h1>
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Informe de Mercancía</title>
+
+    <link rel="stylesheet" th:href="@{/EstiloAdmi.css}">
+</head>
+
+<body>
+
+<div th:fragment="contenido">
+
+    <div class="container">
+
+        <!-- CONTENEDOR SUPERIOR -->
+        <div class="informe-top-box">
+
+            <!-- HEADER -->
+            <div class="informe-header-card">
+
+                <div>
+                    <h1>FruverLife</h1>
+                    <h3 class="subtitulo-informe">
+                        Sistema de Control de Inventario
+                    </h3>
+                </div>
+
+                <button class="btn-print" onclick="window.print()">
+                    IMPRIMIR REPORTE
+                </button>
+
+            </div>
+
+            <!-- TARJETAS -->
+            <div class="informe-summary-boxes">
+
+                <div class="informe-summary-card">
+                    <span>TOTAL DE PRODUCTOS</span>
+                    <h2 th:text="${productos.size()}">0</h2>
+                </div>
+
+                <div class="informe-summary-card">
+                    <span>TOTAL DE STOCK</span>
+                    <h2 th:text="${totalStock}">0</h2>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TABLA -->
+        <div class="table-box">
+
+            <table class="tabla">
+
+                <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr th:each="p : ${productos}">
+                    <td th:text="${p.nombre}"></td>
+                    <td th:text="${p.cantidad}"></td>
+                    <td th:text="'$ ' + ${p.precio}"></td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(productos)}">
+                    <td colspan="3" class="sin-registros">
+                        No hay productos registrados
+                    </td>
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

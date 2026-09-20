@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Menu Administrador</title>
+
+  <link rel="stylesheet" th:href="@{/EstiloAdmi.css}">
+</head>
+
+<body>
+
+<div class="Administrador">
+
+  <!-- MENÚ LATERAL -->
+  <aside class="barra">
+
+    <nav class="Acciones">
+
+      <div class="perfil">
+
+        <h2 class="logo">
+          <span class="blanco">Fruver</span>
+          <span class="verde">Life</span>
+        </h2>
+
+        <div class="info-usuario">
+
+                    <span th:text="${session.usuarioLogueado?.usuario}">
+                    </span>
+
+          <small th:text="${session.usuarioLogueado?.cargo}">
+          </small>
+
+        </div>
+
+      </div>
+
+      <ul>
+
+        <li>
+          <a th:href="@{/menu/gestion}">
+            Gestión de Stock
+          </a>
+        </li>
+
+        <li>
+          <a th:href="@{/menu/proveedores}">
+            Registro de Proveedores
+          </a>
+        </li>
+
+        <li>
+          <a th:href="@{/menu/desperdicios}">
+            Gestión de Desperdicios
+          </a>
+        </li>
+
+        <li>
+          <a th:href="@{/menu/mercancia}">
+            Ingreso de Mercancía
+          </a>
+        </li>
+
+      </ul>
+
+      <a href="/auth/logout" class="cerrar-sesion">
+        Cerrar Sesión
+      </a>
+
+    </nav>
+
+  </aside>
+
+  <!-- CONTENIDO -->
+  <main class="contenido">
+
+    <div th:replace="~{${contenido} :: contenido}"></div>
+
+  </main>
+
+</div>
+
+</body>
+</html>

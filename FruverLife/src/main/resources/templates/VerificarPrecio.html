@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="contenido">
+
+    <section class="table-section">
+
+        <div class="table-header">
+            <h2>Verificar Precio</h2>
+        </div>
+
+        <form th:action="@{/verificar}" method="post">
+
+            <label>Código Producto:</label>
+
+            <input type="number"
+                   name="codigo"
+                   placeholder="Ingrese código"
+                   required>
+
+            <button type="submit" class="btn-principal">
+                Buscar Producto
+            </button>
+
+        </form>
+
+        <div th:if="${error}" class="mensaje-tabla error">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div th:if="${producto != null}" class="resultado-precio">
+
+            <h2>Producto Encontrado</h2>
+
+            <div class="producto-card-precio">
+
+                <div class="info-precio">
+                    <span>Código</span>
+                    <p th:text="${producto.codigo}"></p>
+                </div>
+
+                <div class="info-precio">
+                    <span>Nombre</span>
+                    <p th:text="${producto.nombre}"></p>
+                </div>
+
+                <div class="info-precio">
+                    <span>Precio</span>
+                    <p class="precio-verde" th:text="'$' + ${producto.precio}"></p>
+                </div>
+
+                <div class="info-precio">
+                    <span>Stock</span>
+                    <p th:text="${producto.cantidad + ' unidades'}"></p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="contenido">
+
+  <div class="contenedor-flex">
+
+
+    <div class="contenedor formulario">
+      <h2>Registro de clientes</h2>
+      <form th:action="@{/Cliente/guardar}" th:object="${cliente}" method="post">
+        <input type="hidden" th:field="*{idCliente}" />
+
+        <label>Identificación:</label>
+        <input type="number" th:field="*{identificacion}" placeholder="Identificación" required />
+
+        <label>Nombre:</label>
+        <input type="text" th:field="*{nombre}" placeholder="Nombre" required />
+        <label>Celular:</label>
+        <input type="text" th:field="*{numeroCe}" placeholder="Celular" required />
+        <label>Correo:</label>
+        <input type="email" th:field="*{correo}" placeholder="Correo" required />
+        <button type="submit">
+          <span th:if="${cliente.idCliente==0}">Registrar</span>
+          <span th:if="${cliente.idCliente!=0}">Guardar cambios</span>
+        </button>
+      </form>
+    </div>
+
+
+    <div th:if="${mensaje}" class="mensaje" style="color: green; font-weight: bold;">
+      <p th:text="${mensaje}"></p>
+    </div>
+
+    <!-- Tabla de clientes -->
+    <div class="table-box tabla-clientes">
+      <h2>Lista de clientes</h2>
+      <table class="tabla">
+        <thead>
+        <tr>
+          <th>Identificación</th>
+          <th>Nombre</th>
+          <th>Celular</th>
+          <th>Correo</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="cliente : ${clientes}">
+          <td th:text="${cliente.identificacion}"></td>
+          <td th:text="${cliente.nombre}"></td>
+          <td th:text="${cliente.numeroCe}"></td>
+          <td th:text="${cliente.correo}"></td>
+          <td>
+            <a th:href="@{'/Cliente/editar/' + ${cliente.idCliente}}" class="btn-editar">✏ Editar</a>
+            <a th:href="@{'/Cliente/eliminar/' + ${cliente.idCliente}}" class="btn-eliminar">Eliminar</a>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

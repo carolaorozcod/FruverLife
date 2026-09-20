@@ -1,0 +1,862 @@
+:root {
+  --verde: #2ECC71;
+  --verde-oscuro: #27AE60;
+  --verde-suave: #EAFAF1;
+  --rojo: #E74C3C;
+  --fondo: #F5F7FA;
+  --blanco: #FFFFFF;
+  --borde: #E0E0E0;
+  --texto: #2C3E50;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(
+    135deg,
+    var(--fondo) 0%,
+    var(--verde-suave) 50%,
+    var(--fondo) 100%
+  );
+  color: var(--texto);
+}
+
+.Administrador {
+  display: flex;
+  height: 100vh;
+}
+
+.barra {
+  width: 240px;
+  padding: 15px;
+  background: var(--fondo);
+}
+
+.Acciones {
+  background: var(--blanco);
+  border-radius: 16px;
+  padding: 15px;
+  height: 100%;
+  border: 1px solid var(--borde);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== PERFIL ===== */
+.perfil {
+  background: linear-gradient(160deg, var(--verde), var(--verde-oscuro));
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.perfil h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+/* ===== MENU ===== */
+.Acciones ul {
+  list-style: none;
+  padding: 0;
+}
+
+.Acciones li {
+  margin-bottom: 8px;
+}
+
+.Acciones a {
+  display: block;
+  padding: 10px;
+  border-radius: 8px;
+  color: var(--texto);
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.Acciones a:hover {
+  background: var(--verde-suave);
+  color: var(--verde-oscuro);
+}
+
+.cerrar-sesion {
+  margin-top: auto;
+  margin-bottom: 10px;
+  padding: 10px;
+  text-align: center;
+  background: var(--rojo);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+/* ===== CONTENIDO GENERAL ===== */
+.contenido {
+  flex: 1;
+  padding: 20px;
+  background: #eef6f3;
+}
+
+/* ===== PROVEEDORES ===== */
+.contenedor-proveedores {
+  display: flex;
+  gap: 20px;
+}
+
+.formulario,
+.lista {
+  background: var(--blanco);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--borde);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+
+.formulario {
+  flex: 1;
+}
+
+.lista {
+  flex: 2;
+}
+
+.formulario input {
+  width: 100%;
+  margin: 8px 0 12px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--borde);
+}
+
+/* ===== BOTONES ===== */
+.formulario button {
+  width: 100%;
+  background: var(--verde);
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.formulario button:hover {
+  background: var(--verde-oscuro);
+}
+
+/* ===== TABLAS GENERALES ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: var(--verde-suave);
+  text-align: left;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid var(--borde);
+}
+
+/* ===== BOTONES TABLA ===== */
+.btn-editar {
+  background: var(--verde);
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.btn-eliminar {
+  background: var(--rojo);
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+/* ===== MENSAJES ===== */
+.mensaje-tabla {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.mensaje-tabla.exito {
+  background: #d4edda;
+  color: #155724;
+}
+
+.mensaje-tabla.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* ===== DESPERDICIOS ===== */
+.contenido-desperdicios {
+  padding: 20px;
+}
+
+/* CARD */
+.card-desperdicio {
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* GRID PRINCIPAL */
+.grid-desperdicio {
+  display: grid;
+  grid-template-columns: 1fr 1.8fr;
+  gap: 25px;
+}
+
+/* FORMULARIO */
+.form-box .form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.form-box input {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+/* BOTONES */
+.btn-principal {
+  background: var(--verde);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn-secundario {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* ===== TABLA DESPERDICIOS (MEJORADA) ===== */
+.table-box {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.tabla th {
+  background: var(--verde);
+  color: white;
+  padding: 12px;
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.tabla tr:hover {
+  background: #f3fdf7;
+}
+
+/* TOTAL */
+.total {
+  margin-top: 15px;
+  font-weight: bold;
+  color: var(--rojo);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .Administrador {
+    flex-direction: column;
+  }
+
+  .barra {
+    width: 100%;
+  }
+
+  .contenedor-proveedores {
+    flex-direction: column;
+  }
+
+  .grid-desperdicio {
+    grid-template-columns: 1fr;
+  }
+}
+
+.btn-cancelar {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.3s;
+
+  background: var(--verde); /* mismo color que registrar */
+  color: white !important;
+  border: none;
+
+  display: block; /* 👈 esto lo iguala con el botón real */
+  box-sizing: border-box;
+  text-decoration: none !important;
+}
+
+.btn-cancelar:hover {
+  background: var(--verde-oscuro);
+}
+
+.tabla a,
+.tabla a:visited,
+.tabla a:active,
+.tabla a:focus {
+  text-decoration: none !important;
+  color: inherit;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* extra importante para botones dentro de links */
+.tabla a button {
+  outline: none !important;
+  border: none;
+}
+/* BOTONES TABLA COMO LINKS */
+.btn-editar,
+.btn-eliminar {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none !important;
+  color: white !important;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-editar {
+  background: var(--verde);
+}
+
+.btn-editar:hover {
+  background: var(--verde-oscuro);
+}
+
+.btn-eliminar {
+  background: var(--rojo);
+}
+
+.btn-eliminar:hover {
+  background: #c0392b;
+}
+/* ===== FORZAR ESTILOS GENERALES ===== */
+
+/* tarjetas */
+.contenido > div,
+.contenido section,
+.contenido form,
+.contenido table {
+  border-radius: 12px;
+}
+
+/* formularios */
+form {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+
+/* inputs */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  margin-bottom: 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-size: 15px;
+}
+
+/* botones generales */
+button,
+a.btn,
+input[type="submit"] {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+/* botones verdes */
+button,
+input[type="submit"] {
+  background: var(--verde);
+  color: white;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background: var(--verde-oscuro);
+}
+
+/* links tipo boton */
+a {
+  text-decoration: none;
+}
+
+/* tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+th {
+  background: var(--verde);
+  color: white;
+  padding: 14px;
+  text-align: left;
+}
+
+td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+/* hover filas */
+tr:hover {
+  background: #f7fffa;
+}
+
+/* botones dentro tabla */
+td button,
+td a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: white;
+}
+
+/* editar */
+td a:first-child button,
+td a:first-child {
+  background: var(--verde);
+}
+
+/* eliminar */
+td a:last-child button,
+td a:last-child {
+  background: var(--rojo);
+}
+
+/* contenedores */
+.contenido {
+  padding: 25px;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+
+  .contenido {
+    padding: 10px;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+/* ESPACIO ENTRE REGISTRAR Y CANCELAR */
+.formulario button {
+  margin-bottom: 12px;
+}
+
+/* QUITAR LINEA AZUL DE EDITAR Y ELIMINAR */
+.btn-editar,
+.btn-eliminar,
+.btn-editar:focus,
+.btn-eliminar:focus,
+.btn-editar:active,
+.btn-eliminar:active,
+.tabla a,
+.tabla a:focus,
+.tabla a:active {
+  outline: none !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+/* SI LOS BOTONES ESTAN DENTRO DE <a> */
+.tabla a button {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.btn-eliminar, .btn-editar {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-eliminar { background: #E74C3C; }
+.btn-eliminar:hover { background: #c0392b; }
+
+.btn-editar { background: #2ECC71; }
+.btn-editar:hover { background: #27AE60; }
+
+.ventas-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+}
+
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.client-section,
+.form-section,
+.table-box {
+    background: #fff;
+    padding: 24px;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.client-name {
+    background: #dff5e8;
+    color: #1f8f4d;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.total {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin: 25px 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.total span {
+    color: #27ae60;
+}
+
+@media (max-width: 900px) {
+    .ventas-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.resultado-precio {
+    margin-top: 28px;
+}
+
+.resultado-precio h2 {
+    color: #17324d;
+    font-size: 28px;
+    margin-bottom: 22px;
+}
+
+.producto-card-precio {
+    background: #ecfff4;
+    padding: 28px;
+    border-radius: 18px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+}
+
+.info-precio {
+    background: #fff;
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+}
+
+.info-precio span {
+    display: block;
+    color: #999;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.info-precio p {
+    color: #17324d;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.precio-verde {
+    color: #2ecc71 !important;
+    font-size: 18px !important;
+    font-weight: bold;
+}
+
+@media (max-width: 800px) {
+    .producto-card-precio {
+        grid-template-columns: 1fr;
+    }
+}
+/* CABECERA */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #27ae60;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+.header-titulo h1 {
+    margin: 0;
+    color: #27ae60;
+}
+
+.header-titulo small {
+    display: block;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.btn-accion {
+    background-color: #27ae60;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* RESUMEN */
+.resumen-informe {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.resumen-item {
+    flex: 1;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    color: #fff;
+}
+
+.resumen-rojo { background-color: #e74c3c; }
+.resumen-azul { background-color: #3498db; }
+
+.resumen-titulo { font-size: 0.9em; opacity: 0.9; }
+.resumen-valor { font-size: 1.5em; margin-top: 5px; }
+
+/* TABLA */
+.table-box .tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-box th {
+    background-color: #27ae60;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+.table-box td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.product-tag {
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    font-size: 0.85em;
+}
+
+.total-cell { font-weight: bold; color: #c0392b; }
+
+.sin-registros {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: #555;
+}
+.password-box{
+    position: relative;
+    width: 100%;
+}
+
+.password-box input{
+    width: 100%;
+    padding-right: 40px;
+}
+
+.icono-ojo{
+    position: absolute;
+    right: 15px;
+    top: 35%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 2;
+    }
+
+.informe-top-box {
+    background: #ffffff !important;
+    border-radius: 22px !important;
+    padding: 30px !important;
+    margin-bottom: 30px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+}
+
+.informe-header-card {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 3px solid #2ecc71 !important;
+    padding-bottom: 20px !important;
+    margin-bottom: 25px !important;
+}
+
+.informe-summary-boxes {
+    display: flex !important;
+    gap: 20px !important;
+}
+
+.informe-summary-card {
+    flex: 1 !important;
+    background: #f4fbf7 !important;
+    border-radius: 18px !important;
+    padding: 25px !important;
+    border-left: 6px solid #3498db !important;
+    background: #eef6ff !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+}
+
+.informe-summary-card span {
+    font-weight: bold !important;
+    color:  #3498db !important;
+}
+
+.informe-summary-card h2 {
+    font-size: 32px !important;
+    margin-top: 15px !important;
+    color: #1d3557 !important;
+}
+.subtitulo-informe{
+    color: #3498db;
+    font-weight: bold;
+    margin-top: 10px;
+}
+.grafica-box{
+    background: white;
+    border-radius: 22px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.barra-venta{
+    margin-bottom: 18px;
+}
+
+.barra-info{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.barra-fondo{
+    width: 100%;
+    height: 22px;
+    background: #e8f1ff;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.barra-relleno{
+    height: 100%;
+    background: #3498db;
+    border-radius: 20px;
+}
+
+.factura-box {
+    width: 800px;
+    margin: 40px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+@media print {
+    button,
+    .btn-principal {
+        display: none;
+    }
+
+    body {
+        background: white;
+    }
+
+    .factura-box {
+        box-shadow: none;
+        margin: 0;
+        width: 100%;
+    }
+}

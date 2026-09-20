@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>FruverLife - Ingreso de Mercancía</title>
+</head>
+<body>
+
+<div th:fragment="contenido">
+
+  <h2>Ingreso de Mercancía</h2>
+
+  <!-- SECCIÓN DE MENSAJES (Éxito o Error) -->
+  <div th:if="${mensaje}" class="mensaje-tabla exito">
+    <span th:text="${mensaje}"></span>
+  </div>
+
+  <div th:if="${error}" class="mensaje-tabla error">
+    <span th:text="${error}"></span>
+  </div>
+
+  <div class="contenedor-proveedores">
+
+    <!-- FORMULARIO DE INGRESO -->
+    <div class="formulario">
+
+      <form th:action="@{/inventario/ingresar-lote}" th:object="${ingresoDTO}" method="post">
+
+        <label>Código del Producto:</label>
+        <input type="number"
+               th:field="*{codigo}"
+               placeholder="Ej: 101"
+               required>
+
+        <label>NIT del Proveedor:</label>
+        <input type="text"
+               th:field="*{nit}"
+               placeholder="Ej: 800123456-1"
+               required>
+
+        <label>Cantidad a Ingresar:</label>
+        <input type="number"
+               th:field="*{cantidad}"
+               min="1"
+               placeholder="Ej: 50"
+               required>
+
+        <!-- Botón Principal -->
+        <button type="submit" id="btnAccion">
+           Registrar
+        </button>
+
+        <!-- Botón Cancelar -->
+        <a th:href="@{/menu/mercancia}" class="btn-cancelar">
+          Cancelar
+        </a>
+
+      </form>
+
+    </div>
+
+    <!-- PANEL DERECHO: ESTADO DEL SISTEMA  -->
+    <div class="lista">
+
+      <h2>Estado del Sistema</h2>
+
+      <table>
+        <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Stock Actual</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <!-- Recorre la lista de productos enviada desde el Controller -->
+        <tr th:each="p : ${productos}">
+          <td th:text="${p.nombre}">Nombre del Producto</td>
+          <td>
+            <!-- El stock se pone rojo si es crítico (5 o menos) -->
+            <span th:text="${p.cantidad}"
+                  th:style="${p.cantidad <= 5} ? 'color: var(--rojo); font-weight: bold;' : ''">
+                        </span>
+          </td>
+        </tr>
+
+        <!-- Mensaje si la base de datos está vacía -->
+        <tr th:if="${#lists.isEmpty(productos)}">
+          <td colspan="2" style="text-align: center; padding: 20px;">
+            No hay productos registrados para mostrar stock.
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
