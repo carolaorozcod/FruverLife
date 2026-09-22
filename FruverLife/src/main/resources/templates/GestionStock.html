@@ -21,7 +21,8 @@
         <!-- FORMULARIO -->
         <div class="formulario">
 
-            <form th:action="@{/productos/guardar}" method="post">
+            <form th:action="${producto != null} ? @{'/productos/editar/' + ${producto.idProducto}} : @{/productos/guardar}"
+                  method="post">
 
                 <!-- ID oculto para editar -->
                 <input type="hidden" name="idProducto"

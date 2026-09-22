@@ -104,4 +104,32 @@ public class ProductoController {
 
         return "/menu/informeMer";
     }
+
+    // ACTUALIZAR PRODUCTO
+    @PostMapping("/editar/{id}")
+    public String actualizarProducto(
+            @PathVariable int id,
+            @ModelAttribute Producto producto,
+            RedirectAttributes redirectAttrs
+    ) {
+
+        try {
+
+            productoService.editarProducto(id, producto);
+
+            redirectAttrs.addFlashAttribute(
+                    "mensaje",
+                    "Producto actualizado exitosamente"
+            );
+
+        } catch (Exception e) {
+
+            redirectAttrs.addFlashAttribute(
+                    "error",
+                    e.getMessage()
+            );
+        }
+
+        return "redirect:/menu/gestion";
+    }
 }

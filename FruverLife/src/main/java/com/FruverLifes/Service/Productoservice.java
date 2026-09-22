@@ -29,6 +29,12 @@ public class Productoservice {
             throw new IllegalArgumentException("El precio no puede ser negativo");
         }
 
+        if (productoRepository.existsByCodigo(producto.getCodigo())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un producto registrado con el código " + producto.getCodigo()
+            );
+        }
+
         return productoRepository.save(producto);
     }
 
@@ -56,6 +62,14 @@ public class Productoservice {
     public Producto editarProducto(int id, Producto nuevo) {
 
         Producto existente = buscarPorId(id);
+
+        // Solo valida si el código cambió
+        if (nuevo.getCodigo() != existente.getCodigo()
+                && productoRepository.existsByCodigo(nuevo.getCodigo())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un producto registrado con el código " + nuevo.getCodigo()
+            );
+        }
 
         existente.setCodigo(nuevo.getCodigo());
         existente.setNombre(nuevo.getNombre());
