@@ -48,6 +48,7 @@
                     <th>NIT</th>
                     <th>Nombre</th>
                     <th>Número</th>
+                    <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
                 </thead>
@@ -88,20 +89,20 @@
                     method: "POST",
                     body: datos
                 })
-                .then(r => r.text())
-                .then(msg => {
+                    .then(r => r.text())
+                    .then(msg => {
 
-                    mostrarMensaje(msg, "exito");
+                        mostrarMensaje(msg, "exito");
 
-                    form.reset();
+                        form.reset();
 
-                    idEditando = null;
+                        idEditando = null;
 
-                    document.getElementById("btnAccion")
-                        .innerText = "Registrar";
+                        document.getElementById("btnAccion")
+                            .innerText = "Registrar";
 
-                    cargarProveedores();
-                });
+                        cargarProveedores();
+                    });
 
             });
 
@@ -119,27 +120,35 @@
 
             setTimeout(() => {
                 div.style.display = "none";
-            }, 3000);
+            }, tipo === "error" ? 6000 : 3000);
         }
 
         function cargarProveedores() {
 
             fetch("/proveedores/listar")
-            .then(r => r.json())
-            .then(data => {
+                .then(r => r.json())
+                .then(data => {
 
-                const tabla = document.getElementById("tablaProveedores");
+                    const tabla = document.getElementById("tablaProveedores");
 
-                tabla.innerHTML = "";
+                    tabla.innerHTML = "";
 
-                data.forEach(p => {
+                    data.forEach(p => {
 
-                    tabla.innerHTML += `
+                        const estadoTexto = p.activo ? "Activo" : "Inactivo";
+                        const estadoClase = p.activo ? "estado-activo" : "estado-inactivo";
+
+                        const botonEstado = p.activo
+                            ? `<button class="btn-inactivar" onclick="inactivar(${p.idProveedor})">🚫 Inactivar</button>`
+                            : `<button class="btn-activar" onclick="activar(${p.idProveedor})">✅ Activar</button>`;
+
+                        tabla.innerHTML += `
                         <tr>
 
                             <td>${p.nit}</td>
                             <td>${p.nombre}</td>
                             <td>${p.numero}</td>
+                            <td><span class="${estadoClase}">${estadoTexto}</span></td>
 
                             <td>
 
@@ -156,6 +165,8 @@
 
                                 </button>
 
+                                ${botonEstado}
+
                                 <button class="btn-eliminar"
                                     onclick="eliminar(${p.idProveedor})">
 
@@ -167,9 +178,9 @@
 
                         </tr>
                     `;
-                });
+                    });
 
-            });
+                });
 
         }
 
@@ -201,13 +212,58 @@
             fetch("/proveedores/eliminar/" + id, {
                 method: "DELETE"
             })
-            .then(r => r.text())
-            .then(msg => {
+                .then(r => r.text().then(msg => ({ ok: r.ok, msg })))
+                .then(({ ok, msg }) => {
 
-                mostrarMensaje(msg, "exito");
+                    mostrarMensaje(msg, ok ? "exito" : "error");
 
-                cargarProveedores();
-            });
+                    if (ok) {
+                        cargarProveedores();
+                    }
+                })
+                .catch(() => {
+                    mostrarMensaje("Error de conexión al eliminar el proveedor.", "error");
+                });
+
+        }
+
+        function inactivar(id) {
+
+            fetch("/proveedores/inactivar/" + id, {
+                method: "PATCH"
+            })
+                .then(r => r.text().then(msg => ({ ok: r.ok, msg })))
+                .then(({ ok, msg }) => {
+
+                    mostrarMensaje(msg, ok ? "exito" : "error");
+
+                    if (ok) {
+                        cargarProveedores();
+                    }
+                })
+                .catch(() => {
+                    mostrarMensaje("Error de conexión al inactivar el proveedor.", "error");
+                });
+
+        }
+
+        function activar(id) {
+
+            fetch("/proveedores/activar/" + id, {
+                method: "PATCH"
+            })
+                .then(r => r.text().then(msg => ({ ok: r.ok, msg })))
+                .then(({ ok, msg }) => {
+
+                    mostrarMensaje(msg, ok ? "exito" : "error");
+
+                    if (ok) {
+                        cargarProveedores();
+                    }
+                })
+                .catch(() => {
+                    mostrarMensaje("Error de conexión al activar el proveedor.", "error");
+                });
 
         }
 

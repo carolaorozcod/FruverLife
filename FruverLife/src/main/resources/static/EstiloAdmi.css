@@ -859,4 +859,38 @@ td a:last-child {
         margin: 0;
         width: 100%;
     }
+
+  .btn-inactivar {
+    background: #f39c12;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+
+  .btn-activar {
+    background: #2ecc71;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+
+  .estado-activo {
+    color: #155724;
+    background: #d4edda;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.85em;
+    font-weight: bold;
+  }
+
+  .estado-inactivo {
+    color: #721c24;
+    background: #f8d7da;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.85em;
+    font-weight: bold;
+  }
 }

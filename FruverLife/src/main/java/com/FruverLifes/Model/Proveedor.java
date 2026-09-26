@@ -22,6 +22,9 @@ public class Proveedor {
     @Column(name = "correo", nullable = false)
     private String correo;
 
+    @Column(name = "activo", nullable = false)
+    private boolean activo = true;
+
     // Constructor vacío
     public Proveedor() {
     }
@@ -31,6 +34,7 @@ public class Proveedor {
         this.nombre = nombre;
         this.numero = numero;
         this.correo = correo;
+        this.activo = true;
     }
 
     // GETTERS Y SETTERS
@@ -78,5 +82,13 @@ public class Proveedor {
         if(correo != null && !correo.isEmpty()){
             this.correo = correo;
         }
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 }
