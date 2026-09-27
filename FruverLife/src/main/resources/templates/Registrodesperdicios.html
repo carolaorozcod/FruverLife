@@ -77,7 +77,7 @@
           <tbody>
 
           <tr th:each="reg : ${registros}">
-            <td th:text="${reg.idRegistro}"></td>
+            <td th:text="${reg.detalles[0].codigoProducto}"></td>
             <td th:text="${reg.fecha}"></td>
             <td th:text="${reg.usuario}"></td>
 
