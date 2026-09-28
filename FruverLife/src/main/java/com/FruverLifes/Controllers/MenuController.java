@@ -238,7 +238,13 @@ public class MenuController {
 
         return "layout/PlantillaCajero";
     }
+    @GetMapping("/catalogo")
+    public String catalogo(HttpSession session, Model model) {
 
+        model.addAttribute("usuario", session.getAttribute("usuarioLogueado"));
+        model.addAttribute("productos", productoService.listarTodos());
+        model.addAttribute("contenido", "CatalogoProductos");
 
-
+        return "layout/PlantillaCajero";
+    }
 }

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="contenido">
+
+    <section class="table-box">
+
+        <div class="table-header">
+            <h2>Catálogo de productos</h2>
+        </div>
+
+        <!-- BUSCADOR -->
+        <div class="form-section">
+
+            <label>Buscar producto por nombre:</label>
+
+            <input type="text"
+                   id="buscadorProducto"
+                   placeholder="Escriba el nombre del producto...">
+
+        </div>
+
+        <!-- TABLA -->
+        <div class="table-box">
+
+            <table class="tabla">
+
+                <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                </tr>
+                </thead>
+
+                <tbody id="tablaProductos">
+
+                <tr th:each="producto : ${productos}"
+                    class="producto">
+
+                    <td th:text="${producto.codigo}"></td>
+
+                    <td class="nombre-producto"
+                        th:text="${producto.nombre}"></td>
+
+                </tr>
+
+                <tr id="sinResultados" style="display: none;">
+                    <td colspan="2">
+                        No se encontraron productos.
+                    </td>
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- FILTRADO EN TIEMPO REAL -->
+    <script>
+
+        const buscador = document.getElementById("buscadorProducto");
+        const productos = document.querySelectorAll(".producto");
+        const sinResultados = document.getElementById("sinResultados");
+
+        buscador.addEventListener("input", function () {
+
+            const texto = buscador.value.toLowerCase().trim();
+
+            let encontrados = 0;
+
+            productos.forEach(function (producto) {
+
+                const nombre = producto
+                    .querySelector(".nombre-producto")
+                    .textContent
+                    .toLowerCase();
+
+                if (nombre.includes(texto)) {
+                    producto.style.display = "";
+                    encontrados++;
+                } else {
+                    producto.style.display = "none";
+                }
+
+            });
+
+            if (encontrados === 0) {
+                sinResultados.style.display = "";
+            } else {
+                sinResultados.style.display = "none";
+            }
+
+        });
+
+    </script>
+
+</div>
+
+</body>
+</html>

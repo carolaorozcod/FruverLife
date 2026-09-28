@@ -41,12 +41,4 @@ public class RegistrodeClientesController {
         model.addAttribute("contenido", "Cliente");
         return "layout/PlantillaCajero";
     }
-
-    @GetMapping("/eliminar/{id}")
-    public String eliminarCliente(@PathVariable int id, RedirectAttributes redirectAttrs) {
-        clienteService.eliminar(id);
-        redirectAttrs.addFlashAttribute("mensaje", "Cliente eliminado correctamente");
-        return "redirect:/menu/clientes";
-    }
-
 }

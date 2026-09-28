@@ -35,6 +35,9 @@ public class Productoservice {
             );
         }
 
+        // TODO PRODUCTO NUEVO COMIENZA ACTIVO
+        producto.setEstado("ACTIVO");
+
         return productoRepository.save(producto);
     }
 
@@ -64,7 +67,6 @@ public class Productoservice {
         }
         return producto;
     }
-
     // EDITAR (CORREGIDO Y SEGURO)
     public Producto editarProducto(int id, Producto nuevo) {
 
