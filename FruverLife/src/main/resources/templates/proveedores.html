@@ -89,20 +89,18 @@
                     method: "POST",
                     body: datos
                 })
-                    .then(r => r.text())
-                    .then(msg => {
+                    .then(r => r.text().then(msg => ({ ok: r.ok, msg })))
+                    .then(({ ok, msg }) => {
 
-                        mostrarMensaje(msg, "exito");
+                        mostrarMensaje(msg, ok ? "exito" : "error");
 
-                        form.reset();
-
-                        idEditando = null;
-
-                        document.getElementById("btnAccion")
-                            .innerText = "Registrar";
-
-                        cargarProveedores();
-                    });
+                        if(ok){
+                          form.reset();
+                          idEditando = null;
+                          document.getElementById("btnAccion").innerText = "Registrar";
+                          cargarProveedores();
+                     }
+                });
 
             });
 
@@ -135,12 +133,14 @@
 
                     data.forEach(p => {
 
-                        const estadoTexto = p.activo ? "Activo" : "Inactivo";
-                        const estadoClase = p.activo ? "estado-activo" : "estado-inactivo";
+                        const esActivo = p.estado === "Activo";
 
-                        const botonEstado = p.activo
-                            ? `<button class="btn-inactivar" onclick="inactivar(${p.idProveedor})">🚫 Inactivar</button>`
-                            : `<button class="btn-activar" onclick="activar(${p.idProveedor})">✅ Activar</button>`;
+                        const estadoTexto = esActivo ? "Activo" : "Inactivo";
+                        const estadoClase = esActivo ? "estado-activo" : "estado-inactivo";
+
+                        const botonEstado = esActivo
+                            ? `<button class="btn-inactivar" onclick="inactivar(${p.idProveedor})">Inactivar</button>`
+                            : `<button class="btn-activar" onclick="activar(${p.idProveedor})">Activar</button>`;
 
                         tabla.innerHTML += `
                         <tr>
@@ -166,13 +166,6 @@
                                 </button>
 
                                 ${botonEstado}
-
-                                <button class="btn-eliminar"
-                                    onclick="eliminar(${p.idProveedor})">
-
-                                    🗑 Eliminar
-
-                                </button>
 
                             </td>
 
@@ -205,26 +198,6 @@
 
             document.getElementById("btnAccion")
                 .innerText = "Registrar";
-        }
-
-        function eliminar(id) {
-
-            fetch("/proveedores/eliminar/" + id, {
-                method: "DELETE"
-            })
-                .then(r => r.text().then(msg => ({ ok: r.ok, msg })))
-                .then(({ ok, msg }) => {
-
-                    mostrarMensaje(msg, ok ? "exito" : "error");
-
-                    if (ok) {
-                        cargarProveedores();
-                    }
-                })
-                .catch(() => {
-                    mostrarMensaje("Error de conexión al eliminar el proveedor.", "error");
-                });
-
         }
 
         function inactivar(id) {

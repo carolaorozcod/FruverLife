@@ -50,7 +50,4 @@ public class RegistroDesperdicioService {
         return registroRepository.save(registro);
     }
 
-    public void eliminar(int id) {
-        registroRepository.deleteById(id);
-    }
 }

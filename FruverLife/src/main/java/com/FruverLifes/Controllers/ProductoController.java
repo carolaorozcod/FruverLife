@@ -1,6 +1,7 @@
 package com.FruverLifes.Controllers;
 
 import com.FruverLifes.Model.Producto;
+import com.FruverLifes.Repositories.ProductoRespository;
 import com.FruverLifes.Service.Productoservice;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,34 +69,6 @@ public class ProductoController {
         return "layout/plantillaAdministrador";
     }
 
-    // ELIMINAR
-    @GetMapping("/eliminar/{id}")
-    public String eliminarProducto(
-            @PathVariable int id,
-            RedirectAttributes redirectAttrs
-    ) {
-
-        try {
-
-            productoService.eliminarProducto(id);
-
-            redirectAttrs.addFlashAttribute(
-                    "mensaje",
-                    "Producto eliminado correctamente"
-            );
-
-        } catch (Exception e) {
-
-            redirectAttrs.addFlashAttribute(
-                    "error",
-                    "No se pudo eliminar el producto"
-            );
-        }
-
-        return "redirect:/menu/gestion";
-    }
-
-
     @GetMapping("/informe/mercancia")
     public String generarInforme(Model model) {
         // Enviamos las dos listas a la vista
@@ -132,4 +105,34 @@ public class ProductoController {
 
         return "redirect:/menu/gestion";
     }
+    // INACTIVAR PRODUCTO
+    @GetMapping("/inactivar/{id}")
+    public String inactivarProducto(
+            @PathVariable int id,
+            RedirectAttributes redirectAttrs
+    ) {
+        try {
+            productoService.inactivar(id);
+            redirectAttrs.addFlashAttribute("mensaje", "Producto inactivado correctamente");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/menu/gestion";
+    }
+
+    // ACTIVAR PRODUCTO
+    @GetMapping("/activar/{id}")
+    public String activarProducto(
+            @PathVariable int id,
+            RedirectAttributes redirectAttrs
+    ) {
+        try {
+            productoService.activar(id);
+            redirectAttrs.addFlashAttribute("mensaje", "Producto activado correctamente");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/menu/gestion";
+    }
+
 }

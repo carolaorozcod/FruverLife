@@ -97,26 +97,4 @@ public class RegistroDesperdicioController {
         return "layout/plantillaAdministrador";
     }
 
-    @GetMapping("/desperdicios/eliminar/{id}")
-    public String eliminarDesperdicio(@PathVariable int id,
-                                      RedirectAttributes redirectAttrs) {
-        registroService.eliminar(id);
-
-        redirectAttrs.addFlashAttribute("mensaje", "Registro eliminado correctamente");
-
-        return "redirect:/menu/desperdicios";
-    }
-
-    @GetMapping("/informe")
-    public String verInformeDe(RedirectAttributes redirectAttrs) {
-
-        List<RegistroDesperdicio> lista = registroService.listar();
-        double total = lista.stream().mapToDouble(RegistroDesperdicio::getTotal).sum();
-
-        redirectAttrs.addFlashAttribute("registros", lista);
-        redirectAttrs.addFlashAttribute("totalGeneral", total);
-
-        return "redirect:/menu/informeDes";
-    }
-
 }

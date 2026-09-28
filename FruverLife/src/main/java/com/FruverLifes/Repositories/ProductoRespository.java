@@ -8,6 +8,6 @@ import java.util.Optional;
 public interface ProductoRespository extends JpaRepository<Producto, Integer>  {
     boolean existsByCodigo(int codigo);
     Producto findByCodigo(int codigo);
-    List<Producto> findByCantidadLessThan(int limite);
+    List<Producto> findByCantidadLessThanAndEstado(int limite, String estado);
     List<Producto> findTop10ByOrderByIdProductoDesc();
 }

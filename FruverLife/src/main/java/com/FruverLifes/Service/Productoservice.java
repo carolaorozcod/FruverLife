@@ -38,6 +38,18 @@ public class Productoservice {
         return productoRepository.save(producto);
     }
 
+    public Producto inactivar(int id) {
+        Producto producto = buscarPorId(id);
+        producto.setEstado("INACTIVO");
+        return productoRepository.save(producto);
+    }
+
+    public Producto activar(int id) {
+        Producto producto = buscarPorId(id);
+        producto.setEstado("ACTIVO");
+        return productoRepository.save(producto);
+    }
+
     // BUSCAR POR ID
     public Producto buscarPorId(int id) {
         return productoRepository.findById(id)
@@ -51,11 +63,6 @@ public class Productoservice {
             throw new RuntimeException("Producto con código " + codigo + " no encontrado");
         }
         return producto;
-    }
-
-    // ELIMINAR
-    public void eliminarProducto(int id) {
-        productoRepository.deleteById(id);
     }
 
     // EDITAR (CORREGIDO Y SEGURO)
@@ -130,7 +137,7 @@ public class Productoservice {
     }
 
     public List<Producto> listarProductosAgotandose() {
-        return productoRepositorio.findByCantidadLessThan(5);
+        return productoRepositorio.findByCantidadLessThanAndEstado(5, "ACTIVO");
     }
 
     public List<Producto> listarIngresosRecientes() {

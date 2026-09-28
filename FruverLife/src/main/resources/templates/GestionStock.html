@@ -89,6 +89,7 @@
                     <th>Nombre</th>
                     <th>Cantidad</th>
                     <th>Precio</th>
+                    <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
                 </thead>
@@ -106,23 +107,30 @@
                     <td>
                         $ <span th:text="${p.precio}"></span>
                     </td>
-
+                    <td>
+                    <span th:class="${p.estado == 'ACTIVO'} ? 'estado-activo' : 'estado-inactivo'"
+                          th:text="${p.estado == 'ACTIVO' ? 'Activo' : 'Inactivo'}"></span>
+                    </td>
                     <td>
 
                         <a th:href="@{'/productos/editar/' + ${p.idProducto}}">
-
                             <button type="button" class="btn-editar">
                                 ✏ Editar
                             </button>
-
                         </a>
 
-                        <a th:href="@{'/productos/eliminar/' + ${p.idProducto}}">
-
-                            <button type="button" class="btn-eliminar">
-                                🗑 Eliminar
+                        <a th:if="${p.estado == 'ACTIVO'}"
+                           th:href="@{'/productos/inactivar/' + ${p.idProducto}}">
+                            <button type="button" class="btn-inactivar">
+                                Inactivar
                             </button>
+                        </a>
 
+                        <a th:if="${p.estado != 'ACTIVO'}"
+                           th:href="@{'/productos/activar/' + ${p.idProducto}}">
+                            <button type="button" class="btn-activar">
+                                Activar
+                            </button>
                         </a>
 
                     </td>

@@ -70,7 +70,6 @@
             <th>Usuario</th>
             <th>Detalle (Cantidad / Producto)</th>
             <th>Total</th>
-            <th>Acciones</th>
           </tr>
           </thead>
 
@@ -92,12 +91,6 @@
 
             <td th:text="'$ ' + ${reg.total}"></td>
 
-            <td>
-              <a th:href="@{/desperdicios/eliminar/{id}(id=${reg.idRegistro})}"
-                 class="btn-eliminar">
-                Eliminar
-              </a>
-            </td>
           </tr>
 
           <tr th:if="${#lists.isEmpty(registros)}">

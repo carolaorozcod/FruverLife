@@ -23,9 +23,14 @@ public class ProveedoresControllers {
 
     // GUARDAR
     @PostMapping("/guardar")
-    public String guardar(@ModelAttribute Proveedor p) {
-        proveedorService.guardar(p);
-        return "Proveedor registrado correctamente";
+    public ResponseEntity<String> guardar(@ModelAttribute Proveedor p) {
+        try {
+            proveedorService.guardar(p);
+            return ResponseEntity.ok("Proveedor registrado correctamente");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+
     }
 
     // EDITAR

@@ -13,6 +13,9 @@ public class ProveedorService {
     private ProveedorRepository proveedorRepositorio;
 
     public Proveedor guardar(Proveedor p) {
+        if(proveedorRepositorio.existsByNit(p.getNit())) {
+            throw new IllegalArgumentException ("Ya existe un proveedor con el mismo nit : " + p.getNit());
+        }
         return proveedorRepositorio.save(p);
     }
 
@@ -41,7 +44,7 @@ public class ProveedorService {
         Proveedor proveedor = proveedorRepositorio.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
 
-        proveedor.setActivo(false);
+        proveedor.setEstado("Inactivo");
         return proveedorRepositorio.save(proveedor);
     }
 
@@ -49,7 +52,7 @@ public class ProveedorService {
         Proveedor proveedor = proveedorRepositorio.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
 
-        proveedor.setActivo(true);
+        proveedor.setEstado("Activo");
         return proveedorRepositorio.save(proveedor);
     }
 

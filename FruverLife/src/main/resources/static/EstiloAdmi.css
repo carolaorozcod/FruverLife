@@ -475,12 +475,6 @@ td a:first-child {
   background: var(--verde);
 }
 
-/* eliminar */
-td a:last-child button,
-td a:last-child {
-  background: var(--rojo);
-}
-
 /* contenedores */
 .contenido {
   padding: 25px;
@@ -843,7 +837,6 @@ td a:last-child {
     border-radius: 18px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.08);
 }
-
 @media print {
     button,
     .btn-principal {
@@ -859,38 +852,51 @@ td a:last-child {
         margin: 0;
         width: 100%;
     }
+}
 
-  .btn-inactivar {
-    background: #f39c12;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 6px;
-  }
-
-  .btn-activar {
+.btn-inactivar,
+.btn-activar {
     background: #2ecc71;
     color: white;
     border: none;
-    padding: 6px 10px;
-    border-radius: 6px;
-  }
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
 
-  .estado-activo {
+.btn-inactivar:hover,
+.btn-activar:hover {
+    background: #27ae60;
+}
+
+.estado-activo {
     color: #155724;
-    background: #d4edda;
+    background: #2ecc71;
     padding: 3px 8px;
     border-radius: 10px;
     font-size: 0.85em;
     font-weight: bold;
-  }
+}
 
-  .estado-inactivo {
+.estado-inactivo {
     color: #721c24;
     background: #f8d7da;
     padding: 3px 8px;
     border-radius: 10px;
     font-size: 0.85em;
     font-weight: bold;
-  }
 }
+/* Acciones iguales en Proveedores y Productos */
+.lista td a {
+    display: inline-block;
+    padding: 0;
+    background: none;
+}
+
+.btn-editar,
+.btn-inactivar,
+.btn-activar {
+    padding: 8px 14px;
+}
+

@@ -34,6 +34,9 @@ public class Producto {
         @OneToMany(mappedBy = "producto")
         private List<DetalleVenta> detalles;
 
+        @Column (name = "estado", nullable = false)
+        private String estado;
+
 
         // CONSTRUCTOR
         public Producto() {
@@ -95,5 +98,11 @@ public class Producto {
 
         public void setProveedor(Proveedor proveedor) {
                 this.proveedor = proveedor;
+        }
+        public String getEstado() {
+                return estado;
+        }
+        public void setEstado(String estado) {
+                this.estado = estado;
         }
 }
