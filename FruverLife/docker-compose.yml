@@ -1,0 +1,45 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: fruverlife-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_DATABASE: modelo_fruver
+      MYSQL_ROOT_PASSWORD: fruverlife123
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/FruverLife.sql:/docker-entrypoint-initdb.d/FruverLife.sql
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pfruverlife123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  fruverlife:
+    build: .
+    container_name: fruverlife-app
+    restart: unless-stopped
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/modelo_fruver
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: fruverlife123
+
+      JWT_SECRET: "MzJmRjQ5ODQxN0E2QjQ5RjYxQjM3RjA4QzE1Njc4OTA="
+
+volumes:
+  mysql_data:

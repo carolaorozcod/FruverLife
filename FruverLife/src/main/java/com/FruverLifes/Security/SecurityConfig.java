@@ -36,6 +36,8 @@ public class SecurityConfig {
                         // Archivos estáticos
                         .requestMatchers(
                                 "/EstiloAdmi.css",
+                                "/login.css",
+                                "/imgfondo.jpg.webp",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
