@@ -143,7 +143,7 @@ public class MenuController {
     @GetMapping("/mercancia")
     public String mercancia(Model model) {
         // 1. Indicar al layout qué fragmento cargar
-        model.addAttribute("contenido", "mercancia");
+        model.addAttribute("contenido", "Mercancia");
 
         // 2. Enviar el DTO para el formulario (evita error si usas th:field)
         model.addAttribute("ingresoDTO", new IngresoDTO());
