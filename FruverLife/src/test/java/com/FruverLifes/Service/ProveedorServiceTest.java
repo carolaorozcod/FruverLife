@@ -1,74 +1,57 @@
 package com.FruverLifes.Service;
+
 import com.FruverLifes.Model.Proveedor;
 import com.FruverLifes.Repositories.ProveedorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@Service
-public class ProveedorServiceTest {
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-    @Autowired
-    private ProveedorRepository proveedorRepositorio;
+@ExtendWith(MockitoExtension.class)
+class ProveedorServiceTest {
 
-    public Proveedor guardar(Proveedor p) {
-        if(proveedorRepositorio.existsByNit(p.getNit())) {
-            throw new IllegalArgumentException ("Ya existe un proveedor con el mismo nit : " + p.getNit());
-        }
-        return proveedorRepositorio.save(p);
+    @Mock
+    private ProveedorRepository proveedorRepository;
+
+    @InjectMocks
+    private ProveedorService proveedorService;
+
+    @Test
+    void testGuardarProveedorNuevoExitoso() {
+
+        Proveedor proveedor = new Proveedor();
+        proveedor.setNit("900123456");
+        proveedor.setNombre("Frutas del Campo S.A.S.");
+
+        when(proveedorRepository.existsByNit("900123456")).thenReturn(false);
+        when(proveedorRepository.save(proveedor)).thenReturn(proveedor);
+
+
+        Proveedor resultado = proveedorService.guardar(proveedor);
+
+        assertNotNull(resultado);
+        assertEquals("900123456", resultado.getNit());
+        verify(proveedorRepository, times(1)).save(proveedor);
     }
 
-    public List<Proveedor> listar() {
-        return proveedorRepositorio.findAll();
-    }
+    @Test
+    void testGuardarProveedorNitDuplicadoLanzaExcepcion() {
 
-    public void eliminar(int id_provedores) {
+        Proveedor proveedor = new Proveedor();
+        proveedor.setNit("900123456");
 
-        if (!proveedorRepositorio.existsById(id_provedores)) {
-            throw new RuntimeException("El proveedor no existe.");
-        }
+        when(proveedorRepository.existsByNit("900123456")).thenReturn(true);
 
-        try {
-            proveedorRepositorio.deleteById(id_provedores);
-            proveedorRepositorio.flush();
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException(
-                    "No se puede eliminar el proveedor porque tiene productos asociados. " +
-                            "Puedes inactivarlo en su lugar."
-            );
-        }
-    }
 
-    public Proveedor inactivar(int id) {
-        Proveedor proveedor = proveedorRepositorio.findById(id)
-                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            proveedorService.guardar(proveedor);
+        });
 
-        proveedor.setEstado("Inactivo");
-        return proveedorRepositorio.save(proveedor);
-    }
-
-    public Proveedor activar(int id) {
-        Proveedor proveedor = proveedorRepositorio.findById(id)
-                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
-
-        proveedor.setEstado("Activo");
-        return proveedorRepositorio.save(proveedor);
-    }
-
-    public Proveedor editar(int id, Proveedor datosNuevos) {
-
-        Proveedor proveedor = proveedorRepositorio.findById(id)
-                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
-
-        proveedor.setNit(datosNuevos.getNit());
-        proveedor.setNombre(datosNuevos.getNombre());
-        proveedor.setNumero(datosNuevos.getNumero());
-        proveedor.setCorreo(datosNuevos.getCorreo());
-
-        return proveedorRepositorio.save(proveedor);
-    }
-    public boolean existePorNit(String nit) {
-        return proveedorRepositorio.existsByNit(nit);
+        assertTrue(exception.getMessage().contains("Ya existe un proveedor con el mismo nit"));
+        verify(proveedorRepository, never()).save(any());
     }
 }
