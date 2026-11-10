@@ -1,99 +1,69 @@
 package com.FruverLifes.Model;
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.Date;
 import java.util.List;
 
-@Entity
-@Table(name = "venta")
+@Document(collection = "ventas")
 public class Venta {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String id;
 
-    @Column(name = "id_venta")
-    private Integer idVenta;
+    @Indexed(unique = true)
+    private String codigo;
 
-    @ManyToOne
+    @Indexed(unique = true)
+    private String factura;
 
-    @JoinColumn(name = "id_usuario")
+    private Date fecha;
+    private String usuarioId; // Referencia al _id de la Persona (Cajero/Usuario)
+    private String clienteId; // Referencia al _id de la Persona (Cliente)
 
-    private Usuario usuario;
-
-    @ManyToOne
-
-    @JoinColumn(name = "id_cliente")
-
-    private Clientes cliente;
-
-    private LocalDateTime fecha;
-
+    private List<DetalleVenta> detalle;
     private Double total;
 
-    private String estado;
+    public Venta() {}
 
-    @OneToMany(
-            mappedBy = "venta",
-            cascade = CascadeType.ALL
-    )
+    // Getters y Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
+    public String getFactura() { return factura; }
+    public void setFactura(String factura) { this.factura = factura; }
+    public Date getFecha() { return fecha; }
+    public void setFecha(Date fecha) { this.fecha = fecha; }
+    public String getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(String usuarioId) { this.usuarioId = usuarioId; }
+    public String getClienteId() { return clienteId; }
+    public void setClienteId(String clienteId) { this.clienteId = clienteId; }
+    public List<DetalleVenta> getDetalle() { return detalle; }
+    public void setDetalle(List<DetalleVenta> detalle) { this.detalle = detalle; }
+    public Double getTotal() { return total; }
+    public void setTotal(Double total) { this.total = total; }
 
-    private List<DetalleVenta> detalles;
+    // --- SUBDOCUMENTO PARA EL DETALLE ---
+    public static class DetalleVenta {
+        private String productoId; // Referencia al _id del Producto
+        private String nombre;
+        private Double precioVenta;
+        private Double cantidad;
+        private Double subtotal;
 
-    public Venta() {
-    }
+        public DetalleVenta() {}
 
-    public Integer getIdVenta() {
-        return idVenta;
-    }
-
-    public void setIdVenta(Integer idVenta) {
-        this.idVenta = idVenta;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public Clientes getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Clientes cliente) {
-        this.cliente = cliente;
-    }
-
-    public LocalDateTime getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(LocalDateTime fecha) {
-        this.fecha = fecha;
-    }
-
-    public Double getTotal() {
-        return total;
-    }
-
-    public void setTotal(Double total) {
-        this.total = total;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public List<DetalleVenta> getDetalles() {
-        return detalles;
-    }
-
-    public void setDetalles(List<DetalleVenta> detalles) {
-        this.detalles = detalles;
+        public String getProductoId() { return productoId; }
+        public void setProductoId(String productoId) { this.productoId = productoId; }
+        public String getNombre() { return nombre; }
+        public void setNombre(String nombre) { this.nombre = nombre; }
+        public Double getPrecioVenta() { return precioVenta; }
+        public void setPrecioVenta(Double precioVenta) { this.precioVenta = precioVenta; }
+        public Double getCantidad() { return cantidad; }
+        public void setCantidad(Double cantidad) { this.cantidad = cantidad; }
+        public Double getSubtotal() { return subtotal; }
+        public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
     }
 }
