@@ -1,108 +1,45 @@
 package com.FruverLifes.Model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-
-@Entity
-@Table(name = "producto")
+@Document(collection = "productos")
 public class Producto {
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Column(name = "id_producto")
-        private Integer idProducto;
+    @Id
+    private String id;
 
-        @Column(name = "codigo", unique = true, nullable = false)
-        private int codigo;
+    @Indexed(unique = true)
+    private String codigo;
 
-        @Column(name = "nombre", nullable = false)
-        private String nombre;
+    private String nombre;
+    private String categoria;
+    private Double precioCompra;
+    private Double precioVenta;
+    private Double cantidad;
+    private String unidadMedida;
+    private String estado; // ACTIVO, INACTIVO
 
-        @Column(name = "precio", nullable = false)
-        private Double precio;
+    public Producto() {}
 
-        @Column(name = "cantidad", nullable = false)
-        private int cantidad;
-
-        @ManyToOne
-        @JoinColumn(name = "id_proveedor")
-        private Proveedor proveedor;
-
-        @JsonIgnore
-        @OneToMany(mappedBy = "producto")
-        private List<DetalleVenta> detalles;
-
-        @Column (name = "estado", nullable = false)
-        private String estado;
-
-
-        // CONSTRUCTOR
-        public Producto() {
-        }
-
-        // GETTERS Y SETTERS
-
-        public Integer getIdProducto() {
-                return idProducto;
-        }
-
-        public void setIdProducto(Integer idProducto) {
-                this.idProducto = idProducto;
-        }
-
-        public int getCodigo() {
-                return codigo;
-        }
-
-        public void setCodigo(int codigo) {
-                this.codigo = codigo;
-        }
-
-        public String getNombre() {
-                return nombre;
-        }
-
-        public void setNombre(String nombre) {
-                this.nombre = nombre;
-        }
-
-        public Double getPrecio() {
-                return precio;
-        }
-
-        public void setPrecio(Double precio) {
-                this.precio = precio;
-        }
-
-        public int getCantidad() {
-                return cantidad;
-        }
-
-        public void setCantidad(int cantidad) {
-                this.cantidad = cantidad;
-        }
-
-        public List<DetalleVenta> getDetalles() {
-                return detalles;
-        }
-
-        public void setDetalles(List<DetalleVenta> detalles) {
-                this.detalles = detalles;
-        }
-
-        public Proveedor getProveedor() {
-                return proveedor;
-        }
-
-        public void setProveedor(Proveedor proveedor) {
-                this.proveedor = proveedor;
-        }
-        public String getEstado() {
-                return estado;
-        }
-        public void setEstado(String estado) {
-                this.estado = estado;
-        }
+    // Getters y Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
+    public Double getPrecioCompra() { return precioCompra; }
+    public void setPrecioCompra(Double precioCompra) { this.precioCompra = precioCompra; }
+    public Double getPrecioVenta() { return precioVenta; }
+    public void setPrecioVenta(Double precioVenta) { this.precioVenta = precioVenta; }
+    public Double getCantidad() { return cantidad; }
+    public void setCantidad(Double cantidad) { this.cantidad = cantidad; }
+    public String getUnidadMedida() { return unidadMedida; }
+    public void setUnidadMedida(String unidadMedida) { this.unidadMedida = unidadMedida; }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 }
