@@ -21,7 +21,6 @@ public class Persona {
     // Lista para guardar si es ["CLIENTE"], ["PROVEEDOR"] o ambos
     private List<String> funciones; 
 
-    // Campos que alojarán los subdocumentos definidos abajo
     private DatosProveedor datosProveedor;
     private AccesoSistema accesoSistema;
 
@@ -45,13 +44,11 @@ public class Persona {
     public AccesoSistema getAccesoSistema() { return accesoSistema; }
     public void setAccesoSistema(AccesoSistema accesoSistema) { this.accesoSistema = accesoSistema; }
 
-    // --- CLASES INTERNAS (SUBDOCUMENTOS EN MONGODB) ---
+    // --- CLASES INTERNAS (SUBDOCUMENTOS) ---
 
     public static class DatosProveedor {
         private String nit;
-        
         public DatosProveedor() {}
-        
         public String getNit() { return nit; }
         public void setNit(String nit) { this.nit = nit; }
     }
@@ -63,11 +60,10 @@ public class Persona {
         private String usuario;
         
         private String contrasenaHash;
-        private List<String> roles; // Ej: ["ADMINISTRADOR", "CAJERO"]
-        private String estado; // ACTIVO, INACTIVO
+        private List<String> roles; 
+        private String estado; 
 
         public AccesoSistema() {}
-        
         public Boolean getHabilitado() { return habilitado; }
         public void setHabilitado(Boolean habilitado) { this.habilitado = habilitado; }
         public String getUsuario() { return usuario; }
