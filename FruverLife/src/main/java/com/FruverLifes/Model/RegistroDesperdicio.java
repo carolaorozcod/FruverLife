@@ -1,59 +1,64 @@
 package com.FruverLifes.Model;
-import jakarta.persistence.*;
-import java.time.LocalDate;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.Date;
 import java.util.List;
 
-@Entity
-@Table(name = "registro_desperdicio")
+@Document(collection = "registrosDesperdicio")
 public class RegistroDesperdicio {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_registro")
-    private Integer idRegistro;
-    private LocalDate fecha;
-    private String usuario;
-    private double total;
-    @OneToMany(
-            mappedBy = "registro",
-            cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY
-    )
-    private List<DetalleDesperdicio> detalles;
+    private String id;
 
-    public RegistroDesperdicio() {
-    }
+    @Indexed(unique = true)
+    private String codigo;
 
-    public Integer getIdRegistro() {
-        return idRegistro;
-    }
+    private Date fecha;
+    private String usuarioId; // Referencia al _id de la Persona (Usuario que reporta)
+    private String motivo;
 
-    public void setIdRegistro(Integer idRegistro) {
-        this.idRegistro = idRegistro;
-    }
+    private List<DetalleDesperdicio> detalle;
+    private Double total;
 
-    public LocalDate getFecha() {
-        return fecha;
-    }
+    public RegistroDesperdicio() {}
 
-    public void setFecha(LocalDate fecha) {
-        this.fecha = fecha;
+    // Getters y Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
+    public Date getFecha() { return fecha; }
+    public void setFecha(Date fecha) { this.fecha = fecha; }
+    public String getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(String usuarioId) { this.usuarioId = usuarioId; }
+    public String getMotivo() { return motivo; }
+    public void setMotivo(String motivo) { this.motivo = motivo; }
+    public List<DetalleDesperdicio> getDetalle() { return detalle; }
+    public void setDetalle(List<DetalleDesperdicio> detalle) { this.detalle = detalle; }
+    public Double getTotal() { return total; }
+    public void setTotal(Double total) { this.total = total; }
+
+    // --- SUBDOCUMENTO PARA EL DETALLE ---
+    public static class DetalleDesperdicio {
+        private String productoId; // Referencia al _id del Producto
+        private String nombre;
+        private Double cantidad;
+        private Double costoUnitario;
+        private Double subtotal;
+
+        public DetalleDesperdicio() {}
+
+        public String getProductoId() { return productoId; }
+        public void setProductoId(String productoId) { this.productoId = productoId; }
+        public String getNombre() { return nombre; }
+        public void setNombre(String nombre) { this.nombre = nombre; }
+        public Double getCantidad() { return cantidad; }
+        public void setCantidad(Double cantidad) { this.cantidad = cantidad; }
+        public Double getCostoUnitario() { return costoUnitario; }
+        public void setCostoUnitario(Double costoUnitario) { this.costoUnitario = costoUnitario; }
+        public Double getSubtotal() { return subtotal; }
+        public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
     }
-        public String getUsuario () {
-            return usuario;
-        }
-        public void setUsuario (String usuario){
-            this.usuario = usuario;
-        }
-        public double getTotal() {
-            return total;
-        }
-        public void setTotal(double total){
-            this.total = total;
-        }
-        public List<DetalleDesperdicio> getDetalles () {
-            return detalles;
-        }
-        public void setDetalles(List<DetalleDesperdicio> detalles) {
-            this.detalles = detalles;
-        }
 }
