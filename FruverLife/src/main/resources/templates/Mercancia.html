@@ -10,7 +10,7 @@
 
   <h2>Ingreso de Mercancía</h2>
 
-  <!-- SECCIÓN DE MENSAJES (Éxito o Error) -->
+  <!-- MENSAJES -->
   <div th:if="${mensaje}" class="mensaje-tabla exito">
     <span th:text="${mensaje}"></span>
   </div>
@@ -24,33 +24,43 @@
     <!-- FORMULARIO DE INGRESO -->
     <div class="formulario">
 
-      <form th:action="@{/inventario/ingresar-lote}" th:object="${ingresoDTO}" method="post">
+      <form th:action="@{/inventario/ingresar-lote}" th:object="${compra}" method="post">
 
-        <label>Código del Producto:</label>
-        <input type="number"
-               th:field="*{codigo}"
-               placeholder="Ej: 101"
-               required>
+        <label>Proveedor:</label>
+        <select th:field="*{proveedorId}" required>
+          <option value="">Seleccione</option>
+          <option th:each="pr : ${proveedores}"
+                  th:value="${pr.id}"
+                  th:text="${pr.nombre + ' - ' + pr.datosProveedor.nit}"></option>
+        </select>
 
-        <label>NIT del Proveedor:</label>
-        <input type="text"
-               th:field="*{nit}"
-               placeholder="Ej: 800123456-1"
-               required>
+        <label>Producto:</label>
+        <select th:field="*{detalle[0].productoId}" required>
+          <option value="">Seleccione</option>
+          <option th:each="p : ${productos}"
+                  th:if="${p.estado == 'ACTIVO'}"
+                  th:value="${p.id}"
+                  th:text="${p.codigo + ' - ' + p.nombre}"></option>
+        </select>
 
         <label>Cantidad a Ingresar:</label>
         <input type="number"
-               th:field="*{cantidad}"
-               min="1"
+               th:field="*{detalle[0].cantidad}"
+               min="0.01" step="0.01"
                placeholder="Ej: 50"
                required>
 
-        <!-- Botón Principal -->
+        <label>Precio de compra:</label>
+        <input type="number"
+               th:field="*{detalle[0].precioCompra}"
+               min="0" step="0.01"
+               placeholder="Ej: 2500"
+               required>
+
         <button type="submit" id="btnAccion">
-           Registrar
+          Registrar
         </button>
 
-        <!-- Botón Cancelar -->
         <a th:href="@{/menu/mercancia}" class="btn-cancelar">
           Cancelar
         </a>
@@ -59,7 +69,7 @@
 
     </div>
 
-    <!-- PANEL DERECHO: ESTADO DEL SISTEMA  -->
+    <!-- PANEL DERECHO: ESTADO DEL SISTEMA -->
     <div class="lista">
 
       <h2>Estado del Sistema</h2>
@@ -73,18 +83,17 @@
         </thead>
 
         <tbody>
-        <!-- Recorre la lista de productos enviada desde el Controller -->
         <tr th:each="p : ${productos}">
           <td th:text="${p.nombre}">Nombre del Producto</td>
           <td>
             <!-- El stock se pone rojo si es crítico (5 o menos) -->
             <span th:text="${p.cantidad}"
-                  th:style="${p.cantidad <= 5} ? 'color: var(--rojo); font-weight: bold;' : ''">
-                        </span>
+                  th:style="${p.cantidad != null and p.cantidad <= 5} ? 'color: var(--rojo); font-weight: bold;' : ''">
+            </span>
+            <span th:text="${p.unidadMedida}"></span>
           </td>
         </tr>
 
-        <!-- Mensaje si la base de datos está vacía -->
         <tr th:if="${#lists.isEmpty(productos)}">
           <td colspan="2" style="text-align: center; padding: 20px;">
             No hay productos registrados para mostrar stock.

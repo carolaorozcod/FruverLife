@@ -14,7 +14,7 @@
 
             <label>Código Producto:</label>
 
-            <input type="number"
+            <input type="text"
                    name="codigo"
                    placeholder="Ingrese código"
                    required>
@@ -47,12 +47,13 @@
 
                 <div class="info-precio">
                     <span>Precio</span>
-                    <p class="precio-verde" th:text="'$' + ${producto.precio}"></p>
+                    <p class="precio-verde"
+                       th:text="${producto.precioVenta != null} ? '$ ' + ${#numbers.formatDecimal(producto.precioVenta, 1, 'POINT', 2, 'COMMA')} : 'Sin precio'"></p>
                 </div>
 
                 <div class="info-precio">
                     <span>Stock</span>
-                    <p th:text="${producto.cantidad + ' unidades'}"></p>
+                    <p th:text="${producto.cantidad + ' ' + (producto.unidadMedida != null ? producto.unidadMedida : 'unidades')}"></p>
                 </div>
 
             </div>

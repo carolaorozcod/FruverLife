@@ -1,7 +1,7 @@
 package com.FruverLifes.Controllers;
 
+import com.FruverLifes.Model.Persona;
 import com.FruverLifes.Model.Producto;
-import com.FruverLifes.Model.Usuario;
 import com.FruverLifes.Repositories.ProductoRespository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +17,11 @@ public class VerificarPrecioController {
     @Autowired
     private ProductoRespository productoRepository;
 
-    /*
-    ABRIR VISTA
-    */
+    // ABRIR VISTA
     @GetMapping
     public String abrirVista(HttpSession session, Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             return "redirect:/auth/login";
@@ -35,22 +33,19 @@ public class VerificarPrecioController {
         return "layout/PlantillaCajero";
     }
 
-    /*
-    BUSCAR PRODUCTO
-    */
+    // BUSCAR PRODUCTO
     @PostMapping
-    public String buscarProducto(
-            @RequestParam int codigo,
-            HttpSession session,
-            RedirectAttributes redirectAttrs) {
+    public String buscarProducto(@RequestParam String codigo,
+                                 HttpSession session,
+                                 RedirectAttributes redirectAttrs) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             return "redirect:/auth/login";
         }
 
-        Producto producto = productoRepository.findByCodigo(codigo);
+        Producto producto = productoRepository.findByCodigo(codigo.trim());
 
         if (producto == null) {
             redirectAttrs.addFlashAttribute("error", "Producto no encontrado");

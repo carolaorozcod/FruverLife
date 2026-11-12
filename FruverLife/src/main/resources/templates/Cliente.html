@@ -6,28 +6,29 @@
 
   <div class="contenedor-flex">
 
-
     <div class="contenedor formulario">
       <h2>Registro de clientes</h2>
       <form th:action="@{/Cliente/guardar}" th:object="${cliente}" method="post">
-        <input type="hidden" th:field="*{idCliente}" />
+        <input type="hidden" th:field="*{id}" />
 
         <label>Identificación:</label>
-        <input type="number" th:field="*{identificacion}" placeholder="Identificación" required />
+        <input type="text" th:field="*{identificacion}" placeholder="Identificación" required />
 
         <label>Nombre:</label>
         <input type="text" th:field="*{nombre}" placeholder="Nombre" required />
+
         <label>Celular:</label>
-        <input type="text" th:field="*{numeroCe}" placeholder="Celular" required />
+        <input type="text" th:field="*{telefono}" placeholder="Celular" required />
+
         <label>Correo:</label>
         <input type="email" th:field="*{correo}" placeholder="Correo" required />
+
         <button type="submit">
-          <span th:if="${cliente.idCliente==0}">Registrar</span>
-          <span th:if="${cliente.idCliente!=0}">Guardar cambios</span>
+          <span th:if="${cliente.id == null}">Registrar</span>
+          <span th:if="${cliente.id != null}">Guardar cambios</span>
         </button>
       </form>
     </div>
-
 
     <div th:if="${mensaje}" class="mensaje" style="color: green; font-weight: bold;">
       <p th:text="${mensaje}"></p>
@@ -47,14 +48,17 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="cliente : ${clientes}">
-          <td th:text="${cliente.identificacion}"></td>
-          <td th:text="${cliente.nombre}"></td>
-          <td th:text="${cliente.numeroCe}"></td>
-          <td th:text="${cliente.correo}"></td>
+        <tr th:each="c : ${clientes}">
+          <td th:text="${c.identificacion}"></td>
+          <td th:text="${c.nombre}"></td>
+          <td th:text="${c.telefono}"></td>
+          <td th:text="${c.correo}"></td>
           <td>
-            <a th:href="@{'/Cliente/editar/' + ${cliente.idCliente}}" class="btn-editar">✏ Editar</a>
+            <a th:href="@{'/Cliente/editar/' + ${c.id}}" class="btn-editar">✏ Editar</a>
           </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(clientes)}">
+          <td colspan="5" style="text-align:center;">No hay clientes registrados</td>
         </tr>
         </tbody>
       </table>

@@ -22,9 +22,9 @@
         <form th:action="@{/desperdicios/buscar}" method="post" class="form">
 
           <label>Código Producto</label>
-          <input type="number" name="codigo"
+          <input type="text" name="codigo"
                  th:value="${producto?.codigo}"
-                 placeholder="Ingrese código">
+                 placeholder="Ingrese código" required>
 
           <button type="submit" class="btn-secundario">Buscar</button>
 
@@ -39,11 +39,15 @@
           <input type="text" th:value="${producto?.nombre}" readonly>
 
           <label>Cantidad Averiada</label>
-          <input type="number" name="cantidad" placeholder="Cantidad">
+          <input type="number" name="cantidad" min="0.01" step="0.01"
+                 placeholder="Cantidad" required>
 
-          <label>Precio</label>
+          <label>Motivo</label>
+          <input type="text" name="motivo" placeholder="Ej: Producto dañado, vencido">
+
+          <label>Costo unitario</label>
           <input type="text"
-                 th:value="${producto != null ? '$ ' + producto.precio : '$ 0'}"
+                 th:value="${producto != null and producto.precioCompra != null} ? '$ ' + ${#numbers.formatDecimal(producto.precioCompra, 1, 'POINT', 2, 'COMMA')} : '$ 0'"
                  readonly>
 
           <button type="submit"
@@ -76,25 +80,27 @@
           <tbody>
 
           <tr th:each="reg : ${registros}">
-            <td th:text="${reg.detalles[0].codigoProducto}"></td>
-            <td th:text="${reg.fecha}"></td>
-            <td th:text="${reg.usuario}"></td>
+            <td th:text="${reg.codigo}"></td>
+            <td th:text="${#dates.format(reg.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${responsables[reg.usuarioId] ?: 'Desconocido'}"></td>
 
             <td>
-              <div th:each="det : ${reg.detalles}">
+              <div th:each="det : ${reg.detalle}">
                 <span th:text="${det.cantidad}"></span>
                 <span> x </span>
-                <span th:text="${det.nombreProducto}"></span>
+                <span th:text="${det.nombre}"></span>
                 <br>
               </div>
+              <small th:if="${reg.motivo != null and !#strings.isEmpty(reg.motivo)}"
+                     th:text="'Motivo: ' + ${reg.motivo}"></small>
             </td>
 
-            <td th:text="'$ ' + ${reg.total}"></td>
+            <td th:text="'$ ' + ${#numbers.formatDecimal(reg.total, 1, 'POINT', 2, 'COMMA')}"></td>
 
           </tr>
 
           <tr th:if="${#lists.isEmpty(registros)}">
-            <td colspan="6">No hay registros</td>
+            <td colspan="5">No hay registros</td>
           </tr>
 
           </tbody>
@@ -103,7 +109,7 @@
 
         <div class="total">
           Total Pérdida:
-          <span th:text="${totalGeneral != null ? '$ ' + totalGeneral : '$ 0'}"></span>
+          <span th:text="${totalGeneral != null} ? '$ ' + ${#numbers.formatDecimal(totalGeneral, 1, 'POINT', 2, 'COMMA')} : '$ 0'"></span>
         </div>
 
       </div>

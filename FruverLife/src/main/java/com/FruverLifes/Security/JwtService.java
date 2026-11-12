@@ -40,7 +40,7 @@ public class JwtService {
         return obtenerClaim(token, claims -> claims.get("cargo", String.class));
     }
 
-    // Obtener cualquier información del token
+
     public <T> T obtenerClaim(
             String token,
             Function<Claims, T> resolver

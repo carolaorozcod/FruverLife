@@ -1,63 +1,78 @@
 package com.FruverLifes.Service;
 
-import com.FruverLifes.Model.Usuario;
-import com.FruverLifes.Repositories.UsuarioRepository;
+import com.FruverLifes.Model.Persona;
+import com.FruverLifes.Repositories.PersonasRepositories;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
-@Transactional
 @Service
 public class UsuarioService implements GestorUsuarioService {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private PersonasRepositories usuarioRepository;
 
     @Override
-    public void registrarUsuarios(Usuario usuario) {
-        // Guardar usuario
+    public void registrarUsuarios(Persona usuario) {
+        if (usuario.getAccesoSistema() != null && usuario.getAccesoSistema().getUsuario() != null) {
+            usuario.getAccesoSistema().setUsuario(
+                    usuario.getAccesoSistema().getUsuario().trim().toLowerCase());
+        }
         usuarioRepository.save(usuario);
     }
 
     @Override
-    public Optional<Usuario> buscarPorUsuario(String usuario) {
+    public Optional<Persona> buscarPorUsuario(String usuario) {
         if (usuario == null) return Optional.empty();
 
         String usuarioLimpio = usuario.trim().toLowerCase();
-
-        return usuarioRepository.findAll().stream()
-                .filter(u -> u.getUsuario().trim().toLowerCase().equals(usuarioLimpio))
-                .findFirst();
+        return usuarioRepository.findByAccesoSistemaUsuario(usuarioLimpio);
     }
 
     @Override
-    public Usuario buscarPorId(Integer id) {
-        return usuarioRepository.findById(id).orElse(null);
+    public Optional<Persona> buscarPorUsuarioActivo(String usuario) {
+        if (usuario == null) return Optional.empty();
+
+        String usuarioLimpio = usuario.trim().toLowerCase();
+        return usuarioRepository
+                .findByAccesoSistemaUsuarioAndAccesoSistemaEstado(usuarioLimpio, "ACTIVO");
     }
 
     @Override
-    public void eliminarUsuario(Integer id) {
+    public Persona buscarPorId(String id) {
+        return usuarioRepository.findById(id)
+                .filter(p -> p.getAccesoSistema() != null)
+                .orElse(null);
+    }
 
-        Usuario usuario = buscarPorId(id);
+    @Override
+    public void eliminarUsuario(String id) {
+        cambiarEstado(id, "INACTIVO", false);
+    }
 
-        if(usuario != null){
+    @Override
+    public void activarUsuario(String id) {
+        cambiarEstado(id, "ACTIVO", true);
+    }
 
-            usuario.setEstado("INACTIVO");
-
-            usuarioRepository.save(usuario);
+    private void cambiarEstado(String id, String estado, boolean habilitado) {
+        Persona persona = buscarPorId(id);
+        if (persona != null) {
+            persona.getAccesoSistema().setEstado(estado);
+            persona.getAccesoSistema().setHabilitado(habilitado);
+            usuarioRepository.save(persona);
         }
     }
 
-    public Optional<Usuario> buscarPorUsuarioActivo(String usuario) {
-        return usuarioRepository.findByUsuarioAndEstado(usuario, "ACTIVO");
+    @Override
+    public List<Persona> listarTodosUsuarios() {
+        return usuarioRepository.findByAccesoSistemaIsNotNull();
     }
 
     @Override
-    public List<Usuario> listarUsuarios() {
-
-        return usuarioRepository.findByEstado("ACTIVO");
+    public List<Persona> listarUsuarios() {
+        return usuarioRepository.findByAccesoSistemaEstado("ACTIVO");
     }
 }

@@ -1,14 +1,20 @@
 package com.FruverLifes.Controllers;
-import com.FruverLifes.Model.*;
-import com.FruverLifes.Service.*;
+
+import com.FruverLifes.Model.Persona;
+import com.FruverLifes.Model.Producto;
+import com.FruverLifes.Model.RegistroDesperdicio;
+import com.FruverLifes.Service.GestorUsuarioService;
+import com.FruverLifes.Service.Productoservice;
+import com.FruverLifes.Service.RegistroDesperdicioService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class RegistroDesperdicioController {
@@ -19,31 +25,29 @@ public class RegistroDesperdicioController {
     @Autowired
     private RegistroDesperdicioService registroService;
 
+    @Autowired
+    private GestorUsuarioService gestorUsuarioService;
+
     @GetMapping("/menu/desperdicios")
     public String abrirVista(HttpSession session, Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             return "redirect:/auth/login";
         }
 
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("contenido", "Registrodesperdicios");
-
-        // 👇 ESTO ES LO QUE TE FALTA
-        model.addAttribute("registros", registroService.listar());
-        model.addAttribute("totalGeneral", registroService.total());
-
+        cargarVista(model, usuario, null);
         return "layout/plantillaAdministrador";
     }
-    //BUSCAR PRODUCTO
+
+    // BUSCAR PRODUCTO
     @PostMapping("/desperdicios/buscar")
-    public String buscarProducto(@RequestParam int codigo,
+    public String buscarProducto(@RequestParam String codigo,
                                  HttpSession session,
                                  Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             return "redirect:/auth/login";
@@ -52,49 +56,61 @@ public class RegistroDesperdicioController {
         Producto producto = null;
 
         try {
-            producto = productoService.buscarPorcodigo(codigo);
+            producto = productoService.buscarPorcodigo(codigo.trim());
             model.addAttribute("mensaje", "Producto encontrado correctamente");
         } catch (Exception e) {
             model.addAttribute("error", "Producto no encontrado");
         }
 
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("producto", producto);
-        model.addAttribute("registros", registroService.listar());
-        model.addAttribute("totalGeneral", registroService.total());
-        model.addAttribute("contenido", "Registrodesperdicios");
-
+        cargarVista(model, usuario, producto);
         return "layout/plantillaAdministrador";
     }
-    //GUARDAR REGISTRO
 
-
+    // GUARDAR REGISTRO
     @PostMapping("/desperdicios/guardar")
-    public String guardarRegistro(@RequestParam("codigo") int codigo,
-                                  @RequestParam("cantidad") int cantidad,
+    public String guardarRegistro(@RequestParam("codigo") String codigo,
+                                  @RequestParam("cantidad") double cantidad,
+                                  @RequestParam(value = "motivo", required = false) String motivo,
                                   HttpSession session,
                                   Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             return "redirect:/auth/login";
         }
 
         try {
-            // Llamada al servicio
-            registroService.guardar(codigo, cantidad, usuario);
+            registroService.guardar(codigo, cantidad, motivo, usuario);
             model.addAttribute("mensaje", "¡Registro guardado con éxito!");
         } catch (Exception e) {
-            model.addAttribute("error", "Producto no encontrado o stock insuficiente");
+            model.addAttribute("error", e.getMessage());
         }
 
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("registros", registroService.listar());
-        model.addAttribute("totalGeneral", registroService.total());
-        model.addAttribute("contenido", "Registrodesperdicios");
-
+        cargarVista(model, usuario, null);
         return "layout/plantillaAdministrador";
     }
 
+    // Datos que siempre necesita la pantalla
+    private void cargarVista(Model model, Persona usuario, Producto producto) {
+
+        List<RegistroDesperdicio> registros = registroService.listar();
+
+        // id del usuario -> nombre, para mostrar el responsable
+        Map<String, String> responsables = new HashMap<>();
+        for (RegistroDesperdicio r : registros) {
+            String uid = r.getUsuarioId();
+            if (uid != null && !responsables.containsKey(uid)) {
+                Persona p = gestorUsuarioService.buscarPorId(uid);
+                responsables.put(uid, p != null ? p.getNombre() : "Desconocido");
+            }
+        }
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("producto", producto);
+        model.addAttribute("registros", registros);
+        model.addAttribute("responsables", responsables);
+        model.addAttribute("totalGeneral", registroService.total());
+        model.addAttribute("contenido", "Registrodesperdicios");
+    }
 }

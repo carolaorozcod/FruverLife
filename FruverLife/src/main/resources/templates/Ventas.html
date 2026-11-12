@@ -41,7 +41,7 @@
 
                     <label>Documento Cliente:</label>
 
-                    <input type="number"
+                    <input type="text"
                            name="identificacion"
                            placeholder="Ingrese documento"
                            required>
@@ -63,7 +63,7 @@
 
                     <label>Código Producto:</label>
 
-                    <input type="number"
+                    <input type="text"
                            name="codigo"
                            placeholder="Ingrese código"
                            required>
@@ -72,6 +72,8 @@
 
                     <input type="number"
                            name="cantidad"
+                           min="0.01"
+                           step="0.01"
                            placeholder="Ingrese cantidad"
                            required>
 
@@ -104,7 +106,6 @@
 
                 <thead>
                 <tr>
-                    <th>Código</th>
                     <th>Producto</th>
                     <th>Cantidad</th>
                     <th>Precio</th>
@@ -117,15 +118,13 @@
 
                 <tr th:each="d, estado : ${carrito}">
 
-                    <td th:text="${d.producto.codigo}"></td>
-
-                    <td th:text="${d.producto.nombre}"></td>
+                    <td th:text="${d.nombre}"></td>
 
                     <td th:text="${d.cantidad}"></td>
 
-                    <td th:text="${d.precio}"></td>
+                    <td th:text="'$ ' + ${#numbers.formatDecimal(d.precioVenta, 1, 'POINT', 2, 'COMMA')}"></td>
 
-                    <td th:text="${d.subtotal}"></td>
+                    <td th:text="'$ ' + ${#numbers.formatDecimal(d.subtotal, 1, 'POINT', 2, 'COMMA')}"></td>
 
                     <td>
                         <a th:href="@{/ventas/eliminar/{i}(i=${estado.index})}"
@@ -137,7 +136,7 @@
                 </tr>
 
                 <tr th:if="${#lists.isEmpty(carrito)}">
-                    <td colspan="6">
+                    <td colspan="5">
                         No hay productos en el carrito
                     </td>
                 </tr>
@@ -153,7 +152,7 @@
 
                 <span>
                     $
-                    <span th:text="${total}">0</span>
+                    <span th:text="${#numbers.formatDecimal(total, 1, 'POINT', 2, 'COMMA')}">0</span>
                 </span>
 
             </div>

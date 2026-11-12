@@ -1,23 +1,22 @@
 services:
 
-  mysql:
-    image: mysql:8.0
-    container_name: fruverlife-mysql
+  mongo:
+    image: mongo:7
+    container_name: fruverlife-mongo
     restart: unless-stopped
 
     environment:
-      MYSQL_DATABASE: modelo_fruver
-      MYSQL_ROOT_PASSWORD: fruverlife123
+      MONGO_INITDB_DATABASE: inventario_db
 
     ports:
-      - "3307:3306"
+      - "27018:27017"
 
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./database/FruverLife.sql:/docker-entrypoint-initdb.d/FruverLife.sql
+      - mongo_data:/data/db
+      - ./database/seed.js:/docker-entrypoint-initdb.d/seed.js:ro
 
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pfruverlife123"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -28,18 +27,17 @@ services:
     restart: unless-stopped
 
     depends_on:
-      mysql:
+      mongo:
         condition: service_healthy
 
     ports:
       - "8081:8081"
 
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/modelo_fruver
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: fruverlife123
+      SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017/inventario_db:
+      SPRING_DATA_MONGODB_AUTO_INDEX_CREATION: "true"
 
       JWT_SECRET: "MzJmRjQ5ODQxN0E2QjQ5RjYxQjM3RjA4QzE1Njc4OTA="
 
 volumes:
-  mysql_data:
+  mongo_data:

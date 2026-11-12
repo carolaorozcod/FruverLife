@@ -1,13 +1,17 @@
 package com.FruverLifes.Repositories;
+
 import com.FruverLifes.Model.Producto;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
-import java.util.Optional;
 
-public interface ProductoRespository extends JpaRepository<Producto, Integer>  {
-    boolean existsByCodigo(int codigo);
-    Producto findByCodigo(int codigo);
-    List<Producto> findByCantidadLessThanAndEstado(int limite, String estado);
-    List<Producto> findTop10ByOrderByIdProductoDesc();
+public interface ProductoRespository extends MongoRepository<Producto, String> {
+
+    boolean existsByCodigo(String codigo);
+
+    Producto findByCodigo(String codigo);
+
+    List<Producto> findByCantidadLessThanAndEstado(Double limite, String estado);
+
+    List<Producto> findTop10ByOrderByIdDesc();
 }

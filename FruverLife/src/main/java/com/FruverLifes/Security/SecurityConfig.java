@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -18,6 +21,12 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    // Lo usan el login y el registro de usuarios
+    @Bean
+    @SuppressWarnings("deprecation")
+    public PasswordEncoder passwordEncoder() {
+        return NoOpPasswordEncoder.getInstance();
+    }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -44,42 +53,47 @@ public class SecurityConfig {
                                 "/favicon.ico"
                         ).permitAll()
 
-                        // MENÚ ADMINISTRADOR
+                        // ADMINISTRADOR
                         .requestMatchers(
                                 "/menu/administrador",
                                 "/menu/gestion",
                                 "/menu/proveedores",
                                 "/menu/desperdicios",
                                 "/menu/mercancia",
-                                "/productos/**"
+                                "/productos/**",
+                                "/proveedores/**",
+                                "/inventario/**",
+                                "/desperdicios/**"
                         ).hasRole("ADMINISTRADOR")
 
-                        // MENÚ GERENTE
+                        // GERENTE
                         .requestMatchers(
                                 "/menu/gerente",
                                 "/menu/informemer",
                                 "/menu/informe-diario",
                                 "/menu/informedes",
-                                "/menu/usuarios"
+                                "/menu/usuarios",
+                                "/usuarios/**"
                         ).hasRole("GERENTE")
 
-                        // MENÚ CAJERO
+                        // CAJERO
                         .requestMatchers(
                                 "/menu/cajero",
                                 "/menu/clientes",
                                 "/menu/ventas",
                                 "/menu/precio",
-                                "/menu/catalogo"
+                                "/menu/catalogo",
+                                "/Cliente/**",
+                                "/ventas/**",
+                                "/verificar/**"
                         ).hasRole("CAJERO")
 
                         // Cualquier otra ruta necesita JWT válido
                         .anyRequest().authenticated()
                 )
 
-                // Desactivar el login automático de Spring
                 .formLogin(form -> form.disable())
 
-                // Si intenta entrar sin autenticarse, volver al login
                 .exceptionHandling(exception ->
                         exception.authenticationEntryPoint(
                                 (request, response, authException) ->
@@ -87,7 +101,6 @@ public class SecurityConfig {
                         )
                 )
 
-                // Nuestro filtro JWT se ejecuta antes del filtro de Spring
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

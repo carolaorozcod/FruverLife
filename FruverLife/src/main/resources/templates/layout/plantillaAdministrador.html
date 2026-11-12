@@ -26,10 +26,10 @@
 
         <div class="info-usuario">
 
-                    <span th:text="${session.usuarioLogueado?.usuario}">
-                    </span>
+  <span th:text="${session.usuarioLogueado?.accesoSistema?.usuario}">
+  </span>
 
-          <small th:text="${session.usuarioLogueado?.cargo}">
+          <small th:text="${session.usuarioLogueado?.accesoSistema?.roles != null} ? ${#strings.listJoin(session.usuarioLogueado.accesoSistema.roles, ', ')} : ''">
           </small>
 
         </div>

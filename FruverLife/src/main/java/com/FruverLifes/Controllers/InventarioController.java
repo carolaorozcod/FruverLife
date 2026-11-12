@@ -1,8 +1,9 @@
 package com.FruverLifes.Controllers;
-import com.FruverLifes.Model.IngresoDTO;
+
+import com.FruverLifes.Model.Compra;
+import com.FruverLifes.Model.Persona;
 import com.FruverLifes.Service.InventarioService;
-import com.FruverLifes.Service.Productoservice;
-import com.FruverLifes.Service.ProveedorService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -15,81 +16,23 @@ public class InventarioController {
     @Autowired
     private InventarioService inventarioService;
 
-    @Autowired
-    private Productoservice productoService;
-
-    @Autowired
-    private ProveedorService proveedorService;
-
-    // PROCESAR INGRESO DE MERCANCÍA
     @PostMapping("/ingresar-lote")
-    public String ingresarMercancia(
-            @ModelAttribute IngresoDTO ingreso,
-            RedirectAttributes redirectAttrs
-    ) {
+    public String ingresarMercancia(@ModelAttribute Compra compra,
+                                    HttpSession session,
+                                    RedirectAttributes redirectAttrs) {
+
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            return "redirect:/auth/login";
+        }
 
         try {
-
-            // VALIDAR PRODUCTO
-            if (!productoService.existeProducto(ingreso.getCodigo())) {
-
-                redirectAttrs.addFlashAttribute(
-                        "error",
-                        "El producto con código "
-                                + ingreso.getCodigo()
-                                + " no está registrado."
-                );
-
-                return "redirect:/menu/mercancia";
-            }
-
-            // VALIDAR PROVEEDOR
-            if (!proveedorService.existePorNit(ingreso.getNit())) {
-
-                redirectAttrs.addFlashAttribute(
-                        "error",
-                        "El proveedor con NIT "
-                                + ingreso.getNit()
-                                + " no existe."
-                );
-
-                return "redirect:/menu/mercancia";
-            }
-
-            // ACTUALIZAR INVENTARIO
-            inventarioService.procesarUnicoIngreso(ingreso);
-
-            redirectAttrs.addFlashAttribute(
-                    "mensaje",
-                    "Inventario actualizado con éxito."
-            );
-
-            return "redirect:/menu/mercancia";
-
-        } catch (Exception e) {
-
-            redirectAttrs.addFlashAttribute(
-                    "error",
-                    "Error crítico: " + e.getMessage()
-            );
-
-            return "redirect:/menu/mercancia";
+            inventarioService.registrarCompra(compra, usuario.getId());
+            redirectAttrs.addFlashAttribute("mensaje", "Inventario actualizado con éxito.");
+        } catch (RuntimeException e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
         }
-    }
-    @GetMapping("/mercancia")
-    public String mostrarMercancia(org.springframework.ui.Model model) {
-        try {
-            model.addAttribute("ingresoDTO", new IngresoDTO());
 
-            // Verifica que productoService no sea null y que listarTodos devuelva algo
-            var lista = productoService.listarTodos();
-            model.addAttribute("productos", lista);
-
-
-            return "menu/mercancia";
-        } catch (Exception e) {
-            System.out.println("Error al cargar mercancia: " + e.getMessage());
-            return "error";
-        }
+        return "redirect:/menu/mercancia";
     }
 }

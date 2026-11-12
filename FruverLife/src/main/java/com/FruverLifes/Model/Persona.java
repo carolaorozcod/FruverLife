@@ -1,5 +1,6 @@
 package com.FruverLifes.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -48,9 +49,12 @@ public class Persona {
 
     public static class DatosProveedor {
         private String nit;
+        private String estado; //"Activo" /"Inactivo"
         public DatosProveedor() {}
         public String getNit() { return nit; }
         public void setNit(String nit) { this.nit = nit; }
+        public String getEstado() { return estado; }
+        public void setEstado(String estado) { this.estado = estado; }
     }
 
     public static class AccesoSistema {
@@ -58,7 +62,8 @@ public class Persona {
         
         @Indexed(unique = true, sparse = true)
         private String usuario;
-        
+
+        @JsonIgnore
         private String contrasenaHash;
         private List<String> roles; 
         private String estado; 

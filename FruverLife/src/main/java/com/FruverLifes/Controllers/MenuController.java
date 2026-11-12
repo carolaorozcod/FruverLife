@@ -1,14 +1,27 @@
 package com.FruverLifes.Controllers;
-import com.FruverLifes.Model.*;
-import com.FruverLifes.Service.*;
+
+import com.FruverLifes.Model.Compra;
+import com.FruverLifes.Model.Persona;
+import com.FruverLifes.Model.Producto;
+import com.FruverLifes.Model.RegistroDesperdicio;
+import com.FruverLifes.Model.Venta;
+import com.FruverLifes.Service.ClienteService;
+import com.FruverLifes.Service.GestorUsuarioService;
+import com.FruverLifes.Service.Productoservice;
+import com.FruverLifes.Service.ProveedorService;
+import com.FruverLifes.Service.RegistroDesperdicioService;
+import com.FruverLifes.Service.VentaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/menu")
@@ -24,13 +37,14 @@ public class MenuController {
     private GestorUsuarioService gestorUsuarioService;
     @Autowired
     private VentaService ventaService;
+    @Autowired
+    private ProveedorService proveedorService;
 
-
-    //gerente
+    // ---------- GERENTE ----------
     @GetMapping("/gerente")
     public String menuB(HttpSession session, Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             return "redirect:/auth/login";
@@ -41,43 +55,51 @@ public class MenuController {
 
         return "layout/PlantillaGerente";
     }
-    //funciones de gerente
     @GetMapping("/informedes")
     public String informeDesperdicios(HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
         if (usuario == null) return "redirect:/auth/login";
 
         List<RegistroDesperdicio> lista = registroService.listar();
-        double total = lista.stream().mapToDouble(RegistroDesperdicio::getTotal).sum();
+
+        // id del usuario -> nombre, para mostrar el responsable
+        Map<String, String> responsables = new HashMap<>();
+        for (RegistroDesperdicio r : lista) {
+            String uid = r.getUsuarioId();
+            if (uid != null && !responsables.containsKey(uid)) {
+                Persona p = gestorUsuarioService.buscarPorId(uid);
+                responsables.put(uid, p != null ? p.getNombre() : "Desconocido");
+            }
+        }
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("registros", lista);
-        model.addAttribute("totalGeneral", total);
-        model.addAttribute("contenido", "InformeDes"); // fragment Thymeleaf
-        return "layout/PlantillaGerente"; // usa tu layout
+        model.addAttribute("responsables", responsables);
+        model.addAttribute("totalGeneral", registroService.total());
+        model.addAttribute("contenido", "InformeDes");
+        return "layout/PlantillaGerente";
     }
 
     @GetMapping("/informemer")
     public String verInformeMercancia(Model model) {
-        // Obtener todos los productos
         List<Producto> productos = productoService.listarTodos();
 
-        // Total de stock (opcional, si quieres un resumen)
-        int totalStock = productos.stream().mapToInt(Producto::getCantidad).sum();
+        double totalStock = productos.stream()
+                .filter(p -> p.getCantidad() != null)
+                .mapToDouble(Producto::getCantidad)
+                .sum();
 
-        // Añadir atributos para Thymeleaf
         model.addAttribute("productos", productos);
         model.addAttribute("totalStock", totalStock);
         model.addAttribute("contenido", "Informeme");
 
-        // Retorna el fragmento de Thymeleaf (el HTML del informe)
-        return "layout/PlantillaGerente"; // Este es el nombre de tu HTML con th:fragment="contenido"
+        return "layout/PlantillaGerente";
     }
 
     @GetMapping("/informe-diario")
     public String informeDiario(HttpSession session, Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             return "redirect:/auth/login";
@@ -86,10 +108,28 @@ public class MenuController {
         List<Venta> ventas = ventaService.listarVentasDelDia();
 
         double totalDia = ventas.stream()
+                .filter(v -> v.getTotal() != null)
                 .mapToDouble(Venta::getTotal)
                 .sum();
 
+        // id -> nombre, para mostrar cliente y cajero
+        Map<String, String> clientes = new HashMap<>();
+        Map<String, String> cajeros = new HashMap<>();
+
+        for (Venta v : ventas) {
+            if (v.getClienteId() != null && !clientes.containsKey(v.getClienteId())) {
+                Persona c = clienteService.buscarPorId(v.getClienteId());
+                clientes.put(v.getClienteId(), c != null ? c.getNombre() : "Desconocido");
+            }
+            if (v.getUsuarioId() != null && !cajeros.containsKey(v.getUsuarioId())) {
+                Persona u = gestorUsuarioService.buscarPorId(v.getUsuarioId());
+                cajeros.put(v.getUsuarioId(), u != null ? u.getNombre() : "Desconocido");
+            }
+        }
+
         model.addAttribute("ventas", ventas);
+        model.addAttribute("clientes", clientes);
+        model.addAttribute("cajeros", cajeros);
         model.addAttribute("cantidadVentas", ventas.size());
         model.addAttribute("totalDia", totalDia);
         model.addAttribute("contenido", "InformeDiario");
@@ -98,16 +138,22 @@ public class MenuController {
     }
 
     @GetMapping("/usuarios")
-    public String menuUsuarios(HttpSession session, Model model){
-        // "usuarioLogueado" para la sesión (evita que Spring intente meter el texto del input aquí)
+    public String menuUsuarios(HttpSession session, Model model) {
         model.addAttribute("usuarioLogueado", session.getAttribute("usuarioLogueado"));
 
-        model.addAttribute("usuarioForm", new Usuario());
-        model.addAttribute("usuarios", gestorUsuarioService.listarUsuarios());
+        Persona usuarioForm = new Persona();
+        Persona.AccesoSistema acceso = new Persona.AccesoSistema();
+        acceso.setEstado("ACTIVO");
+        acceso.setHabilitado(true);
+        usuarioForm.setAccesoSistema(acceso);
+
+        model.addAttribute("usuarioForm", usuarioForm);
+        model.addAttribute("usuarios", gestorUsuarioService.listarTodosUsuarios());
         model.addAttribute("contenido", "Registrousuario");
         return "layout/PlantillaGerente";
     }
-  //Administrador
+
+    // ---------- ADMINISTRADOR ----------
     @GetMapping("/administrador")
     public String menuA(HttpSession session, Model model) {
 
@@ -119,7 +165,7 @@ public class MenuController {
 
         return "layout/plantillaAdministrador";
     }
-     //funciones de administrador
+
     @GetMapping("/proveedores")
     public String proveedores(Model model) {
 
@@ -132,53 +178,39 @@ public class MenuController {
     public String gestionStock(Model model) {
 
         model.addAttribute("contenido", "GestionStock");
-
-        model.addAttribute(
-                "productos",
-                productoService.listarProductos()
-        );
+        model.addAttribute("productos", productoService.listarProductos());
 
         return "layout/plantillaAdministrador";
     }
+
     @GetMapping("/mercancia")
     public String mercancia(Model model) {
-        // 1. Indicar al layout qué fragmento cargar
+
+        // Formulario vacío con una línea de detalle ya creada
+        Compra compra = new Compra();
+        compra.setDetalle(new ArrayList<>(List.of(new Compra.DetalleCompra())));
+
+        // Solo proveedores activos
+        List<Persona> proveedoresActivos = proveedorService.listar().stream()
+                .filter(p -> p.getDatosProveedor() != null
+                        && "ACTIVO".equalsIgnoreCase(p.getDatosProveedor().getEstado()))
+                .toList();
+
         model.addAttribute("contenido", "Mercancia");
-
-        // 2. Enviar el DTO para el formulario (evita error si usas th:field)
-        model.addAttribute("ingresoDTO", new IngresoDTO());
-
-        // 3. Enviar la lista de productos para la tabla de la derecha
+        model.addAttribute("compra", compra);
+        model.addAttribute("proveedores", proveedoresActivos);
         model.addAttribute("productos", productoService.listarTodos());
 
-        // 4. Retornar la plantilla maestra
         return "layout/plantillaAdministrador";
     }
 
-    @GetMapping("/menu/desperdicios")
-    public String desperdicios(HttpSession session, Model model) {
+    // (/menu/desperdicios lo atiende RegistroDesperdicioController)
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-
-        if (usuario == null) {
-            return "redirect:/auth/login";
-        }
-
-        model.addAttribute("usuario", usuario);
-
-        model.addAttribute("desperdicios", registroService.listar()); // si tienes método
-        model.addAttribute("total", registroService.total()); // si tienes método
-
-        model.addAttribute("contenido", "Registrodesperdicios");
-
-        return "layout/plantillaAdministrador";
-    }
-    //
-
+    // ---------- CAJERO ----------
     @GetMapping("/cajero")
     public String menuc(HttpSession session, Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             return "redirect:/auth/login";
@@ -189,27 +221,26 @@ public class MenuController {
 
         return "layout/PlantillaCajero";
     }
-    //metodos de cajero
 
     @GetMapping("/clientes")
-    public String menuClientes(HttpSession session, Model model){
+    public String menuClientes(HttpSession session, Model model) {
         model.addAttribute("usuario", session.getAttribute("usuarioLogueado"));
         model.addAttribute("clientes", clienteService.listarClientes());
-        model.addAttribute("cliente", new Clientes()); // formulario vacío
-        model.addAttribute("contenido", "Cliente"); // fragmento Thymeleaf
-        return "layout/PlantillaCajero"; // layout con menú y sidebar
+        model.addAttribute("cliente", new Persona());
+        model.addAttribute("contenido", "Cliente");
+        return "layout/PlantillaCajero";
     }
 
     @GetMapping("/ventas")
-    public String ventas(HttpSession session, Model model){
+    public String ventas(HttpSession session, Model model) {
 
         model.addAttribute("usuario", session.getAttribute("usuarioLogueado"));
 
-        Clientes cliente = (Clientes) session.getAttribute("clienteActual");
+        Persona cliente = (Persona) session.getAttribute("clienteActual");
         model.addAttribute("cliente", cliente);
 
-        List<DetalleVenta> carrito =
-                (List<DetalleVenta>) session.getAttribute("carrito");
+        List<Venta.DetalleVenta> carrito =
+                (List<Venta.DetalleVenta>) session.getAttribute("carrito");
 
         if (carrito == null) {
             carrito = new ArrayList<>();
@@ -219,30 +250,32 @@ public class MenuController {
 
         double total = 0;
 
-        for (DetalleVenta d : carrito) {
+        for (Venta.DetalleVenta d : carrito) {
             total += d.getSubtotal();
         }
 
         model.addAttribute("total", total);
-
         model.addAttribute("contenido", "Ventas");
 
         return "layout/PlantillaCajero";
     }
+
     @GetMapping("/precio")
-    public String verificar(HttpSession session, Model model){
+    public String verificar(HttpSession session, Model model) {
 
         model.addAttribute("usuario", session.getAttribute("usuarioLogueado"));
-
         model.addAttribute("contenido", "VerificarPrecio");
 
         return "layout/PlantillaCajero";
     }
+
     @GetMapping("/catalogo")
     public String catalogo(HttpSession session, Model model) {
 
         model.addAttribute("usuario", session.getAttribute("usuarioLogueado"));
-        model.addAttribute("productos", productoService.listarTodos());
+        model.addAttribute("productos", productoService.listarTodos().stream()
+                .filter(p -> "ACTIVO".equalsIgnoreCase(p.getEstado()))
+                .toList());
         model.addAttribute("contenido", "CatalogoProductos");
 
         return "layout/PlantillaCajero";

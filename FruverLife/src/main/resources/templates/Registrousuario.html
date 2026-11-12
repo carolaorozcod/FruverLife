@@ -4,29 +4,36 @@
 <div th:fragment="contenido">
   <div class="contenedor-flex">
 
-
     <div class="contenedor formulario">
       <h2>Registro de Usuario</h2>
       <form th:action="@{/usuarios/guardar}" th:object="${usuarioForm}" method="post">
-        <input type="hidden" th:field="*{idUsuario}" />
+        <input type="hidden" th:field="*{id}" />
+
+        <label>Nombre:</label>
+        <input type="text" th:field="*{nombre}" placeholder="Nombre completo" required />
+
+        <label>Identificación:</label>
+        <input type="text" th:field="*{identificacion}" placeholder="Identificación" required />
+
         <label>Usuario:</label>
-        <input type="text" th:field="*{usuario}" placeholder="Usuario" required />
+        <input type="text" th:field="*{accesoSistema.usuario}" placeholder="Usuario" required />
+
         <label>Contraseña:</label>
         <div class="password-box" style="position: relative;">
           <input type="password"
                  id="contrasena"
-                 th:field="*{contrasena}"
-                 placeholder="Contraseña"
-                 required
+                 autocomplete="new-password"
+                 th:field="*{accesoSistema.contrasenaHash}"
+                 th:placeholder="${usuarioForm.id == null} ? 'Contraseña' : 'Dejar vacío para conservar la actual'"
                  style="width: 100%; padding-right: 45px;">
-
           <span onclick="togglePassword()"
                 style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer;">
             👁
-        </span>
+          </span>
         </div>
+
         <label>Cargo:</label>
-        <select th:field="*{cargo}" required>
+        <select th:field="*{accesoSistema.roles}" required>
           <option value="">Seleccione</option>
           <option value="Gerente">Gerente</option>
           <option value="Cajero">Cajero</option>
@@ -34,60 +41,64 @@
         </select>
 
         <button type="submit">
-          <span th:if="${usuarioForm.idUsuario == null}">Registrar</span>
-          <span th:if="${usuarioForm.idUsuario != null}">Guardar cambios</span>
+          <span th:if="${usuarioForm.id == null}">Registrar</span>
+          <span th:if="${usuarioForm.id != null}">Guardar cambios</span>
         </button>
       </form>
 
       <script>
         function togglePassword() {
             const input = document.getElementById("contrasena");
-
-            if (input.type === "password") {
-                input.type = "text";
-            } else {
-                input.type = "password";
-            }
+            input.type = (input.type === "password") ? "text" : "password";
         }
       </script>
 
-      <!-- Bloque de alertas -->
       <div th:if="${mensaje}" style="color:green; margin-top:10px;">
         <p th:text="${mensaje}"></p>
       </div>
-
       <div th:if="${error}" style="color:red; margin-top:10px;">
         <p th:text="${error}"></p>
       </div>
     </div>
 
-    <!-- TABLA DE USUARIOS -->
     <div class="table-box tabla-usuarios">
       <h2>Usuarios Registrados</h2>
       <table class="tabla">
         <thead>
         <tr>
           <th>Usuario</th>
-          <th>Contraseña</th>
           <th>Cargo</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
         </thead>
         <tbody>
+
         <tr th:each="user : ${usuarios}">
-          <td th:text="${user.usuario}"></td>
-          <td th:text="${user.contrasena}"></td>
-          <td th:text="${user.cargo}"></td>
-          <td th:text="${user.estado}"></td>
+          <td th:text="${user.accesoSistema.usuario}"></td>
+          <td th:text="${#strings.listJoin(user.accesoSistema.roles, ', ')}"></td>
           <td>
-            <a th:href="@{'/usuarios/editar/' + ${user.idUsuario}}" class="btn-editar">Editar</a>
-            <a th:href="@{'/usuarios/eliminar/' + ${user.idUsuario}}" class="btn-eliminar">Inactivar</a>
+            <span th:text="${user.accesoSistema.estado}"
+                  th:style="${user.accesoSistema.estado == 'ACTIVO'} ? 'color:green;font-weight:bold;' : 'color:red;font-weight:bold;'">
+            </span>
+          </td>
+          <td>
+            <a th:href="@{'/usuarios/editar/' + ${user.id}}" class="btn-editar">Editar</a>
+
+            <a th:if="${user.accesoSistema.estado == 'ACTIVO'}"
+               th:href="@{'/usuarios/eliminar/' + ${user.id}}"
+               class="btn-eliminar">Inactivar</a>
+
+            <a th:if="${user.accesoSistema.estado != 'ACTIVO'}"
+               th:href="@{'/usuarios/activar/' + ${user.id}}"
+               class="btn-editar">Activar</a>
           </td>
         </tr>
+
         <tr th:if="${#lists.isEmpty(usuarios)}">
           <td colspan="4" style="text-align:center;">No hay usuarios registrados</td>
         </tr>
+
         </tbody>
       </table>
     </div>

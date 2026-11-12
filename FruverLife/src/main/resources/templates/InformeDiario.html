@@ -28,52 +28,54 @@
 
                 <div class="informe-summary-card">
                     <span>TOTAL RECAUDADO</span>
-                    <h2 th:text="'$ ' + ${totalDia}">$ 0</h2>
+                    <h2 th:text="'$ ' + ${#numbers.formatDecimal(totalDia, 1, 'POINT', 2, 'COMMA')}">$ 0</h2>
                 </div>
 
             </div>
 
         </div>
+
         <div class="grafica-box">
             <h2>Gráfica de ventas del día</h2>
 
             <div class="barra-venta" th:each="v : ${ventas}">
                 <div class="barra-info">
-                    <span th:text="'Venta #' + ${v.idVenta}"></span>
-                    <strong th:text="'$ ' + ${v.total}"></strong>
+                    <span th:text="'Venta ' + ${v.factura}"></span>
+                    <strong th:text="'$ ' + ${#numbers.formatDecimal(v.total, 1, 'POINT', 2, 'COMMA')}"></strong>
                 </div>
 
                 <div class="barra-fondo">
                     <div class="barra-relleno"
-                         th:style="'width:' + (${v.total} / ${totalDia} * 100) + '%'">
+                         th:style="'width:' + (${totalDia > 0} ? ${#numbers.formatDecimal(v.total / totalDia * 100, 1, 'NONE', 2, 'POINT')} : 0) + '%'">
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="table-box">
 
             <table class="tabla">
                 <thead>
                 <tr>
+                    <th>Factura</th>
                     <th>Cliente</th>
                     <th>Cajero</th>
                     <th>Fecha</th>
-                    <th>Estado</th>
                     <th>Total</th>
                 </tr>
                 </thead>
 
                 <tbody>
                 <tr th:each="v : ${ventas}">
-                    <td th:text="${v.cliente.nombre}"></td>
-                    <td th:text="${v.usuario.usuario}"></td>
-                    <td th:text="${#temporals.format(v.fecha, 'dd/MM/yyyy HH:mm')}"></td>
-                    <td th:text="${v.estado}"></td>
-                    <td th:text="'$ ' + ${v.total}"></td>
+                    <td th:text="${v.factura}"></td>
+                    <td th:text="${clientes[v.clienteId] ?: 'Desconocido'}"></td>
+                    <td th:text="${cajeros[v.usuarioId] ?: 'Desconocido'}"></td>
+                    <td th:text="${#dates.format(v.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="'$ ' + ${#numbers.formatDecimal(v.total, 1, 'POINT', 2, 'COMMA')}"></td>
                 </tr>
 
                 <tr th:if="${#lists.isEmpty(ventas)}">
-                    <td colspan="6" class="sin-registros">
+                    <td colspan="5" class="sin-registros">
                         No hay ventas registradas hoy
                     </td>
                 </tr>

@@ -13,53 +13,54 @@ public class Productoservice {
     @Autowired
     private ProductoRespository productoRepository;
 
-    // LISTAR TODOS
     public List<Producto> listarProductos() {
         return productoRepository.findAll();
     }
 
-    // GUARDAR
+    public List<Producto> listarTodos() {
+        return productoRepository.findAll();
+    }
+
     public Producto guardarProducto(Producto producto) {
 
-        if (producto.getCantidad() < 0) {
+        if (producto.getCantidad() == null || producto.getCantidad() < 0) {
             throw new IllegalArgumentException("La cantidad no puede ser negativa");
         }
-
-        if (producto.getPrecio() < 0) {
-            throw new IllegalArgumentException("El precio no puede ser negativo");
+        if (producto.getPrecioVenta() == null || producto.getPrecioVenta() < 0) {
+            throw new IllegalArgumentException("El precio de venta no puede ser negativo");
         }
-
+        if (producto.getPrecioCompra() != null && producto.getPrecioCompra() < 0) {
+            throw new IllegalArgumentException("El precio de compra no puede ser negativo");
+        }
         if (productoRepository.existsByCodigo(producto.getCodigo())) {
             throw new IllegalArgumentException(
-                    "Ya existe un producto registrado con el código " + producto.getCodigo()
-            );
+                    "Ya existe un producto registrado con el código " + producto.getCodigo());
         }
 
-        // TODO PRODUCTO NUEVO COMIENZA ACTIVO
-        producto.setEstado("ACTIVO");
+        producto.setId(null);          // evita que llegue un "" como id
+        producto.setEstado("ACTIVO");  // todo producto nuevo comienza activo
 
         return productoRepository.save(producto);
     }
 
-    public Producto inactivar(int id) {
+    public Producto inactivar(String id) {
         Producto producto = buscarPorId(id);
         producto.setEstado("INACTIVO");
         return productoRepository.save(producto);
     }
 
-    public Producto activar(int id) {
+    public Producto activar(String id) {
         Producto producto = buscarPorId(id);
         producto.setEstado("ACTIVO");
         return productoRepository.save(producto);
     }
 
-    // BUSCAR POR ID
-    public Producto buscarPorId(int id) {
+    public Producto buscarPorId(String id) {
         return productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
     }
 
-    public Producto buscarPorcodigo(int codigo) {
+    public Producto buscarPorcodigo(String codigo) {
         Producto producto = productoRepository.findByCodigo(codigo);
 
         if (producto == null) {
@@ -67,46 +68,40 @@ public class Productoservice {
         }
         return producto;
     }
-    // EDITAR (CORREGIDO Y SEGURO)
-    public Producto editarProducto(int id, Producto nuevo) {
+
+    public Producto editarProducto(String id, Producto nuevo) {
 
         Producto existente = buscarPorId(id);
 
-        // Solo valida si el código cambió
-        if (nuevo.getCodigo() != existente.getCodigo()
+        // Solo valida el código si cambió (String se compara con equals, no con !=)
+        if (!nuevo.getCodigo().equals(existente.getCodigo())
                 && productoRepository.existsByCodigo(nuevo.getCodigo())) {
             throw new IllegalArgumentException(
-                    "Ya existe un producto registrado con el código " + nuevo.getCodigo()
-            );
+                    "Ya existe un producto registrado con el código " + nuevo.getCodigo());
         }
 
         existente.setCodigo(nuevo.getCodigo());
         existente.setNombre(nuevo.getNombre());
-        existente.setPrecio(nuevo.getPrecio());
+        existente.setCategoria(nuevo.getCategoria());
+        existente.setPrecioCompra(nuevo.getPrecioCompra());
+        existente.setPrecioVenta(nuevo.getPrecioVenta());
         existente.setCantidad(nuevo.getCantidad());
+        existente.setUnidadMedida(nuevo.getUnidadMedida());
 
         return productoRepository.save(existente);
     }
 
-    // ACTUALIZAR STOCK
-    public void actualizarStock(int idProducto, int nuevaCantidad) {
-
+    public void actualizarStock(String idProducto, Double nuevaCantidad) {
         if (nuevaCantidad < 0) {
             throw new IllegalArgumentException("La cantidad no puede ser negativa");
         }
-
         Producto producto = buscarPorId(idProducto);
         producto.setCantidad(nuevaCantidad);
         productoRepository.save(producto);
     }
 
-    // DESCONTAR STOCK
-    public void descontarStock(int codigo, int cantidad) {
-        Producto producto = productoRepository.findByCodigo(codigo);
-
-        if (producto == null) {
-            throw new RuntimeException("El producto no existe");
-        }
+    public void descontarStock(String codigo, Double cantidad) {
+        Producto producto = buscarPorcodigo(codigo);
 
         if (producto.getCantidad() < cantidad) {
             throw new RuntimeException("No hay suficiente stock. Disponible: " + producto.getCantidad());
@@ -116,34 +111,24 @@ public class Productoservice {
         productoRepository.save(producto);
     }
 
-    // SUMAR STOCK
-    public void sumarStock(int idProducto, int cantidadASumar) {
+    public void sumarStock(String idProducto, Double cantidadASumar) {
         if (cantidadASumar <= 0) {
             throw new IllegalArgumentException("La cantidad a sumar debe ser mayor a cero");
         }
-
         Producto producto = buscarPorId(idProducto);
         producto.setCantidad(producto.getCantidad() + cantidadASumar);
         productoRepository.save(producto);
     }
 
-    @Autowired
-    private ProductoRespository productoRepositorio;
-
-    public boolean existeProducto(int codigo) {
-        return productoRepositorio.existsByCodigo(codigo);
-    }
-
-    public List<Producto> listarTodos() {
-        return productoRepositorio.findAll();
+    public boolean existeProducto(String codigo) {
+        return productoRepository.existsByCodigo(codigo);
     }
 
     public List<Producto> listarProductosAgotandose() {
-        return productoRepositorio.findByCantidadLessThanAndEstado(5, "ACTIVO");
+        return productoRepository.findByCantidadLessThanAndEstado(5.0, "ACTIVO");
     }
 
     public List<Producto> listarIngresosRecientes() {
-        return productoRepositorio.findTop10ByOrderByIdProductoDesc();
+        return productoRepository.findTop10ByOrderByIdDesc();
     }
-
 }

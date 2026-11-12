@@ -13,13 +13,13 @@
             <form id="formProveedor">
 
                 <label>NIT:</label>
-                <input type="text" name="nit" required>
+                <input type="text" name="datosProveedor.nit" required>
 
                 <label>Nombre:</label>
                 <input type="text" name="nombre" required>
 
                 <label>Número:</label>
-                <input type="text" name="numero" required>
+                <input type="text" name="telefono" required>
 
                 <label>Correo:</label>
                 <input type="email" name="correo" required>
@@ -66,6 +66,7 @@
     <script>
 
         let idEditando = null;
+        let proveedores = {}; // id -> proveedor, para editar sin pasar todo por el onclick
 
         document.addEventListener("DOMContentLoaded", function () {
 
@@ -94,13 +95,13 @@
 
                         mostrarMensaje(msg, ok ? "exito" : "error");
 
-                        if(ok){
-                          form.reset();
-                          idEditando = null;
-                          document.getElementById("btnAccion").innerText = "Registrar";
-                          cargarProveedores();
-                     }
-                });
+                        if (ok) {
+                            form.reset();
+                            idEditando = null;
+                            document.getElementById("btnAccion").innerText = "Registrar";
+                            cargarProveedores();
+                        }
+                    });
 
             });
 
@@ -130,45 +131,34 @@
                     const tabla = document.getElementById("tablaProveedores");
 
                     tabla.innerHTML = "";
+                    proveedores = {};
 
                     data.forEach(p => {
 
-                        const esActivo = p.estado === "Activo";
+                        proveedores[p.id] = p;
+
+                        const datosProv = p.datosProveedor || {};
+                        const esActivo = datosProv.estado === "Activo";
 
                         const estadoTexto = esActivo ? "Activo" : "Inactivo";
                         const estadoClase = esActivo ? "estado-activo" : "estado-inactivo";
 
                         const botonEstado = esActivo
-                            ? `<button class="btn-inactivar" onclick="inactivar(${p.idProveedor})">Inactivar</button>`
-                            : `<button class="btn-activar" onclick="activar(${p.idProveedor})">Activar</button>`;
+                            ? `<button class="btn-inactivar" onclick="inactivar('${p.id}')">Inactivar</button>`
+                            : `<button class="btn-activar" onclick="activar('${p.id}')">Activar</button>`;
 
                         tabla.innerHTML += `
                         <tr>
-
-                            <td>${p.nit}</td>
-                            <td>${p.nombre}</td>
-                            <td>${p.numero}</td>
+                            <td>${datosProv.nit ?? ""}</td>
+                            <td>${p.nombre ?? ""}</td>
+                            <td>${p.telefono ?? ""}</td>
                             <td><span class="${estadoClase}">${estadoTexto}</span></td>
-
                             <td>
-
-                                <button class="btn-editar"
-                                    onclick='editar(
-                                        ${p.idProveedor},
-                                        "${p.nit}",
-                                        "${p.nombre}",
-                                        "${p.numero}",
-                                        "${p.correo}"
-                                    )'>
-
+                                <button class="btn-editar" onclick="editar('${p.id}')">
                                     ✏ Editar
-
                                 </button>
-
                                 ${botonEstado}
-
                             </td>
-
                         </tr>
                     `;
                     });
@@ -177,14 +167,17 @@
 
         }
 
-        function editar(id, nit, nombre, numero, correo) {
+        function editar(id) {
+
+            const p = proveedores[id];
+            if (!p) return;
 
             idEditando = id;
 
-            document.querySelector("input[name='nit']").value = nit;
-            document.querySelector("input[name='nombre']").value = nombre;
-            document.querySelector("input[name='numero']").value = numero;
-            document.querySelector("input[name='correo']").value = correo;
+            document.querySelector("input[name='datosProveedor.nit']").value = p.datosProveedor?.nit ?? "";
+            document.querySelector("input[name='nombre']").value = p.nombre ?? "";
+            document.querySelector("input[name='telefono']").value = p.telefono ?? "";
+            document.querySelector("input[name='correo']").value = p.correo ?? "";
 
             document.getElementById("btnAccion")
                 .innerText = "Guardar cambios";

@@ -1,16 +1,18 @@
 package com.FruverLifes.Controllers;
 
-import com.FruverLifes.Model.Usuario;
+import com.FruverLifes.Model.Persona;
+import com.FruverLifes.Security.JwtService;
 import com.FruverLifes.Service.GestorUsuarioService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import com.FruverLifes.Security.JwtService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -22,6 +24,9 @@ public class LoginController {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String mostrarLogin() {
@@ -35,20 +40,26 @@ public class LoginController {
                         HttpSession session,
                         HttpServletResponse response) {
 
-        Optional<Usuario> userOpt = gestorUsuarioService.buscarPorUsuario(usuario);
+        // Ya filtra por estado ACTIVO
+        Optional<Persona> userOpt = gestorUsuarioService.buscarPorUsuarioActivo(usuario);
 
         if (userOpt.isPresent()) {
 
-            Usuario user = userOpt.get();
+            Persona user = userOpt.get();
+            Persona.AccesoSistema acceso = user.getAccesoSistema();
 
-            if (user.getContrasena().equals(contrasena)
-                    && user.getEstado().equals("ACTIVO")) {
+            boolean credencialesValidas = acceso != null
+                    && Boolean.TRUE.equals(acceso.getHabilitado())
+                    && acceso.getContrasenaHash() != null
+                    && passwordEncoder.matches(contrasena, acceso.getContrasenaHash());
+
+            if (credencialesValidas) {
+
+                List<String> roles = acceso.getRoles();
+                String cargo = (roles == null || roles.isEmpty()) ? "CAJERO" : roles.get(0);
 
                 // Generar JWT
-                String token = jwtService.generarToken(
-                        user.getUsuario(),
-                        user.getCargo()
-                );
+                String token = jwtService.generarToken(acceso.getUsuario(), cargo);
 
                 // Guardar usuario para mostrarlo en Thymeleaf
                 session.setAttribute("usuarioLogueado", user);
@@ -63,12 +74,10 @@ public class LoginController {
                 response.addCookie(jwtCookie);
 
                 // Redireccionar según el cargo
-                if (user.getCargo().equalsIgnoreCase("Gerente")) {
+                if (tieneRol(roles, "GERENTE")) {
                     return "redirect:/menu/gerente";
-
-                } else if (user.getCargo().equalsIgnoreCase("administrador")) {
+                } else if (tieneRol(roles, "ADMINISTRADOR")) {
                     return "redirect:/menu/administrador";
-
                 } else {
                     return "redirect:/menu/cajero";
                 }
@@ -77,6 +86,10 @@ public class LoginController {
 
         model.addAttribute("error", "Usuario o contraseña incorrectos");
         return "login";
+    }
+
+    private boolean tieneRol(List<String> roles, String rol) {
+        return roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase(rol));
     }
 
     @GetMapping("/logout")

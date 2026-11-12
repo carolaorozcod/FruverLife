@@ -1,7 +1,9 @@
 package com.FruverLifes.Controllers;
 
-import com.FruverLifes.Model.*;
-import com.FruverLifes.Repositories.ClienteRepository;
+import com.FruverLifes.Model.Persona;
+import com.FruverLifes.Model.Producto;
+import com.FruverLifes.Model.Venta;
+import com.FruverLifes.Repositories.PersonasRepositories;
 import com.FruverLifes.Repositories.ProductoRespository;
 import com.FruverLifes.Service.VentaService;
 import jakarta.servlet.http.HttpSession;
@@ -12,13 +14,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/ventas")
 public class VentaController {
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private PersonasRepositories clienteRepository;
 
     @Autowired
     private ProductoRespository productoRepository;
@@ -27,17 +30,17 @@ public class VentaController {
     private VentaService ventaService;
 
     @PostMapping("/buscarCliente")
-    public String buscarCliente(@RequestParam int identificacion, HttpSession session) {
+    public String buscarCliente(@RequestParam String identificacion, HttpSession session) {
 
-        Clientes cliente = clienteRepository.findByIdentificacion(identificacion);
+        Optional<Persona> clienteOpt = clienteRepository.findByIdentificacion(identificacion);
 
-        if (cliente == null) {
+        if (clienteOpt.isEmpty()) {
             session.setAttribute("errorVenta", "Cliente no encontrado");
             session.removeAttribute("mensajeVenta");
             return "redirect:/menu/ventas";
         }
 
-        session.setAttribute("clienteActual", cliente);
+        session.setAttribute("clienteActual", clienteOpt.get());
         session.setAttribute("mensajeVenta", "Cliente encontrado correctamente");
         session.removeAttribute("errorVenta");
 
@@ -45,8 +48,8 @@ public class VentaController {
     }
 
     @PostMapping("/agregar")
-    public String agregarProducto(@RequestParam int codigo,
-                                  @RequestParam int cantidad,
+    public String agregarProducto(@RequestParam String codigo,
+                                  @RequestParam double cantidad,
                                   HttpSession session) {
 
         Producto producto = productoRepository.findByCodigo(codigo);
@@ -57,32 +60,54 @@ public class VentaController {
             return "redirect:/menu/ventas";
         }
 
+        if (!"ACTIVO".equalsIgnoreCase(producto.getEstado())) {
+            session.setAttribute("errorVenta", "El producto " + producto.getNombre() + " está inactivo");
+            session.removeAttribute("mensajeVenta");
+            return "redirect:/menu/ventas";
+        }
+
         if (cantidad <= 0) {
             session.setAttribute("errorVenta", "La cantidad debe ser mayor a cero");
             session.removeAttribute("mensajeVenta");
             return "redirect:/menu/ventas";
         }
 
-        if (cantidad > producto.getCantidad()) {
-            session.setAttribute("errorVenta", "Stock insuficiente para " + producto.getNombre());
-            session.removeAttribute("mensajeVenta");
-            return "redirect:/menu/ventas";
-        }
-
-        DetalleVenta detalle = new DetalleVenta();
-        detalle.setProducto(producto);
-        detalle.setCantidad(cantidad);
-        detalle.setPrecio(producto.getPrecio());
-        detalle.setSubtotal(producto.getPrecio() * cantidad);
-
-        List<DetalleVenta> carrito =
-                (List<DetalleVenta>) session.getAttribute("carrito");
+        List<Venta.DetalleVenta> carrito =
+                (List<Venta.DetalleVenta>) session.getAttribute("carrito");
 
         if (carrito == null) {
             carrito = new ArrayList<>();
         }
 
-        carrito.add(detalle);
+        // Si el producto ya está en el carrito, se suma a esa línea
+        Venta.DetalleVenta existente = null;
+        for (Venta.DetalleVenta d : carrito) {
+            if (d.getProductoId().equals(producto.getId())) {
+                existente = d;
+                break;
+            }
+        }
+
+        double cantidadTotal = cantidad + (existente != null ? existente.getCantidad() : 0);
+
+        if (cantidadTotal > producto.getCantidad()) {
+            session.setAttribute("errorVenta", "Stock insuficiente para " + producto.getNombre());
+            session.removeAttribute("mensajeVenta");
+            return "redirect:/menu/ventas";
+        }
+
+        if (existente != null) {
+            existente.setCantidad(cantidadTotal);
+            existente.setSubtotal(existente.getPrecioVenta() * cantidadTotal);
+        } else {
+            Venta.DetalleVenta detalle = new Venta.DetalleVenta();
+            detalle.setProductoId(producto.getId());
+            detalle.setNombre(producto.getNombre());
+            detalle.setPrecioVenta(producto.getPrecioVenta());
+            detalle.setCantidad(cantidad);
+            detalle.setSubtotal(producto.getPrecioVenta() * cantidad);
+            carrito.add(detalle);
+        }
 
         session.setAttribute("carrito", carrito);
         session.setAttribute("mensajeVenta", "Producto agregado al carrito");
@@ -94,8 +119,8 @@ public class VentaController {
     @GetMapping("/eliminar/{index}")
     public String eliminarProducto(@PathVariable int index, HttpSession session) {
 
-        List<DetalleVenta> carrito =
-                (List<DetalleVenta>) session.getAttribute("carrito");
+        List<Venta.DetalleVenta> carrito =
+                (List<Venta.DetalleVenta>) session.getAttribute("carrito");
 
         if (carrito != null && index >= 0 && index < carrito.size()) {
             carrito.remove(index);
@@ -111,9 +136,10 @@ public class VentaController {
     @PostMapping("/finalizar")
     public String finalizarVenta(HttpSession session) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-        Clientes cliente = (Clientes) session.getAttribute("clienteActual");
-        List<DetalleVenta> carrito = (List<DetalleVenta>) session.getAttribute("carrito");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
+        Persona cliente = (Persona) session.getAttribute("clienteActual");
+        List<Venta.DetalleVenta> carrito =
+                (List<Venta.DetalleVenta>) session.getAttribute("carrito");
 
         if (usuario == null) {
             return "redirect:/auth/login";
@@ -136,7 +162,7 @@ public class VentaController {
             session.removeAttribute("clienteActual");
             session.removeAttribute("errorVenta");
 
-            return "redirect:/ventas/factura/" + ventaGuardada.getIdVenta();
+            return "redirect:/ventas/factura/" + ventaGuardada.getId();
 
         } catch (Exception e) {
             session.setAttribute("errorVenta", "No se pudo realizar la venta: " + e.getMessage());
@@ -145,9 +171,9 @@ public class VentaController {
     }
 
     @GetMapping("/factura/{id}")
-    public String verFactura(@PathVariable int id, Model model, HttpSession session) {
+    public String verFactura(@PathVariable String id, Model model, HttpSession session) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             return "redirect:/auth/login";
@@ -161,7 +187,9 @@ public class VentaController {
         }
 
         model.addAttribute("venta", venta);
-        model.addAttribute("detalles", venta.getDetalles());
+        model.addAttribute("detalles", venta.getDetalle());
+        model.addAttribute("cliente", clienteRepository.findById(venta.getClienteId()).orElse(null));
+        model.addAttribute("cajero", clienteRepository.findById(venta.getUsuarioId()).orElse(null));
 
         return "FacturaVenta";
     }

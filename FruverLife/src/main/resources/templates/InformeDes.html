@@ -22,7 +22,7 @@
         <div class="summary-boxes" style="display:flex; gap:20px; margin-bottom:30px;">
             <div class="box box-red" style="flex:1; padding:20px; border-radius:8px; text-align:center; color:white; background:#e74c3c;">
                 <div style="font-size:0.9em; opacity:0.9;">VALOR TOTAL PÉRDIDA</div>
-                <h2 th:text="${'$ ' + totalGeneral}" style="margin:5px 0;">$ 0</h2>
+                <h2 th:text="${'$ ' + #numbers.formatDecimal(totalGeneral, 1, 'POINT', 2, 'COMMA')}" style="margin:5px 0;">$ 0</h2>
             </div>
             <div class="box box-blue" style="flex:1; padding:20px; border-radius:8px; text-align:center; color:white; background:#3498db;">
                 <div style="font-size:0.9em; opacity:0.9;">REGISTROS PROCESADOS</div>
@@ -43,15 +43,15 @@
                 </thead>
                 <tbody>
                 <tr th:each="reg : ${registros}">
-                    <td th:text="${reg.fecha}"></td>
-                    <td th:text="${reg.usuario}"></td>
+                    <td th:text="${#dates.format(reg.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${responsables[reg.usuarioId] ?: 'Desconocido'}"></td>
                     <td>
-                        <div th:each="det : ${reg.detalles}" class="product-tag"
+                        <div th:each="det : ${reg.detalle}" class="product-tag"
                              style="background:#f0f0f0; padding:4px 10px; border-radius:20px; font-size:0.85em; display:inline-block; margin-right:5px; margin-bottom:5px;">
-                            <span th:text="${det.nombreProducto + ' (' + det.cantidad + ')'}"></span>
+                            <span th:text="${det.nombre + ' (' + det.cantidad + ')'}"></span>
                         </div>
                     </td>
-                    <td th:text="'$ ' + ${reg.total}" style="font-weight:bold; color:#c0392b;"></td>
+                    <td th:text="'$ ' + ${#numbers.formatDecimal(reg.total, 1, 'POINT', 2, 'COMMA')}" style="font-weight:bold; color:#c0392b;"></td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(registros)}">
                     <td colspan="4" style="text-align:center; padding:20px;">No hay registros de desperdicios</td>
