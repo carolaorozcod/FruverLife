@@ -18,6 +18,7 @@ public class Persona {
 
     private String telefono;
     private String correo;
+    private int puntos = 0;
     
     // Lista para guardar si es ["CLIENTE"], ["PROVEEDOR"] o ambos
     private List<String> funciones; 
@@ -37,6 +38,8 @@ public class Persona {
     public String getTelefono() { return telefono; }
     public void setTelefono(String telefono) { this.telefono = telefono; }
     public String getCorreo() { return correo; }
+    public int getPuntos() { return puntos; }
+    public void setPuntos(int puntos) { this.puntos = puntos; }
     public void setCorreo(String correo) { this.correo = correo; }
     public List<String> getFunciones() { return funciones; }
     public void setFunciones(List<String> funciones) { this.funciones = funciones; }

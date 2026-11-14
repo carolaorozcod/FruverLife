@@ -44,7 +44,7 @@
                 <tbody>
                 <tr th:each="reg : ${registros}">
                     <td th:text="${#dates.format(reg.fecha, 'dd/MM/yyyy HH:mm')}"></td>
-                    <td th:text="${responsables[reg.usuarioId] ?: 'Desconocido'}"></td>
+                    <td th:text="${responsables.get(reg.usuarioId) ?: 'Desconocido'}"></td>
                     <td>
                         <div th:each="det : ${reg.detalle}" class="product-tag"
                              style="background:#f0f0f0; padding:4px 10px; border-radius:20px; font-size:0.85em; display:inline-block; margin-right:5px; margin-bottom:5px;">

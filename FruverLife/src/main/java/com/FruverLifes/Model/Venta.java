@@ -24,6 +24,9 @@ public class Venta {
 
     private List<DetalleVenta> detalle;
     private Double total;
+    private Double descuento = 0.0;
+    private Integer puntosUtilizados = 0;
+    private Integer puntosGanados = 0;
 
     public Venta() {}
 
@@ -44,6 +47,12 @@ public class Venta {
     public void setDetalle(List<DetalleVenta> detalle) { this.detalle = detalle; }
     public Double getTotal() { return total; }
     public void setTotal(Double total) { this.total = total; }
+    public Double getDescuento() { return descuento; }
+    public void setDescuento(Double descuento) { this.descuento = descuento; }
+    public Integer getPuntosUtilizados() { return puntosUtilizados; }
+    public void setPuntosUtilizados(Integer puntosUtilizados) { this.puntosUtilizados = puntosUtilizados; }
+    public Integer getPuntosGanados() { return puntosGanados;}
+    public void setPuntosGanados(Integer puntosGanados) { this.puntosGanados = puntosGanados; }
 
     // --- SUBDOCUMENTO PARA EL DETALLE ---
     public static class DetalleVenta {

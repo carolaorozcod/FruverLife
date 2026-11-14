@@ -231,16 +231,42 @@ public class MenuController {
         return "layout/PlantillaCajero";
     }
 
+
     @GetMapping("/ventas")
     public String ventas(HttpSession session, Model model) {
 
-        model.addAttribute("usuario", session.getAttribute("usuarioLogueado"));
+        model.addAttribute(
+                "usuario",
+                session.getAttribute("usuarioLogueado")
+        );
 
-        Persona cliente = (Persona) session.getAttribute("clienteActual");
+        // Consultar el cliente seleccionado
+        Persona clienteSesion =
+                (Persona) session.getAttribute("clienteActual");
+
+        Persona cliente = clienteSesion;
+
+        if (clienteSesion != null) {
+
+            Persona clienteActualizado =
+                    gestorUsuarioService.buscarPorId(clienteSesion.getId());
+
+            // Si MongoDB devuelve el cliente, usamos sus datos actualizados.
+            // Si no, conservamos el cliente de la sesión.
+            if (clienteActualizado != null) {
+                cliente = clienteActualizado;
+                session.setAttribute("clienteActual", clienteActualizado);
+            }
+        }
+
         model.addAttribute("cliente", cliente);
 
+        model.addAttribute("cliente", cliente);
+
+        // Recuperar carrito
         List<Venta.DetalleVenta> carrito =
-                (List<Venta.DetalleVenta>) session.getAttribute("carrito");
+                (List<Venta.DetalleVenta>)
+                        session.getAttribute("carrito");
 
         if (carrito == null) {
             carrito = new ArrayList<>();
@@ -248,6 +274,7 @@ public class MenuController {
 
         model.addAttribute("carrito", carrito);
 
+        // Calcular subtotal
         double total = 0;
 
         for (Venta.DetalleVenta d : carrito) {
@@ -255,10 +282,48 @@ public class MenuController {
         }
 
         model.addAttribute("total", total);
+
+        // DATOS DEL PROGRAMA DE PUNTOS
+        int puntosDisponibles = 0;
+
+        if (cliente != null) {
+            puntosDisponibles = cliente.getPuntos();
+        }
+
+        // Descuento máximo del 30%
+        double maximoDescuento = Math.floor(total * 0.30);
+
+        // Máximo de puntos que puede redimir
+        int maximoPuntosRedimibles = 0;
+
+        if (cliente != null && puntosDisponibles >= 10000) {
+
+            maximoPuntosRedimibles = (int) Math.min(
+                    puntosDisponibles,
+                    maximoDescuento
+            );
+        }
+
+        model.addAttribute(
+                "puntosDisponibles",
+                puntosDisponibles
+        );
+
+        model.addAttribute(
+                "maximoDescuento",
+                maximoDescuento
+        );
+
+        model.addAttribute(
+                "maximoPuntosRedimibles",
+                maximoPuntosRedimibles
+        );
+
         model.addAttribute("contenido", "Ventas");
 
         return "layout/PlantillaCajero";
     }
+
 
     @GetMapping("/precio")
     public String verificar(HttpSession session, Model model) {

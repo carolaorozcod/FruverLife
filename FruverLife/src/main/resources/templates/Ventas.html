@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
@@ -6,24 +7,14 @@
 
     <!-- MENSAJES -->
     <div th:if="${session.errorVenta}"
-         style="color:red;
-                font-weight:bold;
-                margin-bottom:15px;
-                background:#ffe5e5;
-                padding:10px;
-                border-radius:10px;">
-
+         style="color:red; font-weight:bold; margin-bottom:15px;
+                background:#ffe5e5; padding:10px; border-radius:10px;">
         <p th:text="${session.errorVenta}"></p>
     </div>
 
     <div th:if="${session.mensajeVenta}"
-         style="color:green;
-                font-weight:bold;
-                margin-bottom:15px;
-                background:#e8ffe8;
-                padding:10px;
-                border-radius:10px;">
-
+         style="color:green; font-weight:bold; margin-bottom:15px;
+                background:#e8ffe8; padding:10px; border-radius:10px;">
         <p th:text="${session.mensajeVenta}"></p>
     </div>
 
@@ -101,7 +92,7 @@
 
             </div>
 
-            <!-- TABLA -->
+            <!-- TABLA DE PRODUCTOS -->
             <table class="tabla">
 
                 <thead>
@@ -145,10 +136,10 @@
 
             </table>
 
-            <!-- TOTAL -->
+            <!-- TOTAL DE LA COMPRA -->
             <div class="total">
 
-                <h3>Total:</h3>
+                <h3>Subtotal:</h3>
 
                 <span>
                     $
@@ -157,11 +148,112 @@
 
             </div>
 
-            <!-- FINALIZAR -->
-            <form th:action="@{/ventas/finalizar}" method="post">
+            <!-- PROGRAMA DE PUNTOS -->
+            <section th:if="${cliente != null}"
+                     style="margin-top:20px; padding:20px;
+                            background:#f0fff5; border:1px solid #c9ead5;
+                            border-radius:12px;">
 
-                <button type="submit" class="btn-principal">
+                <h2 style="color:#168b4b; margin-top:0;">
+                    Programa de Puntos FruverLife
+                </h2>
+
+                <div style="display:flex; justify-content:space-between;
+                            margin-bottom:12px;">
+
+                    <span>Puntos disponibles:</span>
+
+                    <strong th:text="${puntosDisponibles}">0</strong>
+
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                            margin-bottom:12px;">
+
+                    <span>Mínimo para redimir:</span>
+
+                    <strong>10.000 puntos</strong>
+
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                            margin-bottom:12px;">
+
+                    <span>Descuento máximo (30 %):</span>
+
+                    <strong style="color:#168b4b;"
+                            th:text="'$ ' + ${#numbers.formatDecimal(maximoDescuento, 1, 'POINT', 2, 'COMMA')}">
+                        $ 0
+                    </strong>
+
+                </div>
+
+                <div th:if="${puntosDisponibles < 10000}"
+                     style="background:#fff3cd; color:#856404;
+                            padding:10px; border-radius:8px;
+                            margin-bottom:12px;">
+
+                    Necesitas acumular 10.000 puntos para habilitar
+                    la redención.
+
+                </div>
+
+                <div th:if="${puntosDisponibles >= 10000}"
+                     style="background:#dff7e8; color:#176b3a;
+                            padding:10px; border-radius:8px;
+                            margin-bottom:12px;">
+
+                    ¡Puedes utilizar tus puntos en esta compra!
+
+                </div>
+
+                <p style="font-size:13px; color:#555;">
+                    Cada 1.000 puntos equivalen a $1.000 de descuento.
+                    El descuento no puede superar el 30 % de la compra.
+                </p>
+
+            </section>
+
+            <!-- FORMULARIO FINALIZAR VENTA -->
+            <form th:action="@{/ventas/finalizar}"
+                  method="post"
+                  style="margin-top:20px;">
+
+                <div th:if="${cliente != null}"
+                     style="margin-bottom:15px;">
+
+                    <label for="puntosSolicitados"
+                           style="display:block; font-weight:bold;
+                                  margin-bottom:8px;">
+
+                        ¿Cuántos puntos desea utilizar?
+
+                    </label>
+
+                    <input type="number"
+                           id="puntosSolicitados"
+                           name="puntosSolicitados"
+                           value="0"
+                           min="0"
+                           step="1"
+                           th:attr="max=${maximoPuntosRedimibles}"
+                           th:disabled="${puntosDisponibles < 10000}"
+                           style="width:100%; padding:10px;
+                                  border:1px solid #ccc;
+                                  border-radius:8px;">
+
+                    <small style="color:#666;"
+                           th:text="'Máximo permitido: ' + ${maximoPuntosRedimibles} + ' puntos'">
+                    </small>
+
+                </div>
+
+                <button type="submit"
+                        class="btn-principal"
+                        th:disabled="${cliente == null or #lists.isEmpty(carrito)}">
+
                     Finalizar Venta
+
                 </button>
 
             </form>
