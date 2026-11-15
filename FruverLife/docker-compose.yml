@@ -34,9 +34,8 @@ services:
       - "8081:8081"
 
     environment:
-      SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017/inventario_db:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/inventario_db
       SPRING_DATA_MONGODB_AUTO_INDEX_CREATION: "true"
-
       JWT_SECRET: "MzJmRjQ5ODQxN0E2QjQ5RjYxQjM3RjA4QzE1Njc4OTA="
 
 volumes:
