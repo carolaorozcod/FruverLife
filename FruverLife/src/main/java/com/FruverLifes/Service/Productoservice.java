@@ -83,7 +83,6 @@ public class Productoservice {
         existente.setCodigo(nuevo.getCodigo());
         existente.setNombre(nuevo.getNombre());
         existente.setCategoria(nuevo.getCategoria());
-        existente.setPrecioCompra(nuevo.getPrecioCompra());
         existente.setPrecioVenta(nuevo.getPrecioVenta());
         existente.setCantidad(nuevo.getCantidad());
         existente.setUnidadMedida(nuevo.getUnidadMedida());

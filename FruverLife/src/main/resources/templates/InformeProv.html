@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="contenido">
+
+  <div class="container">
+
+    <!-- CABECERA -->
+    <div class="header">
+      <div>
+        <h1 style="margin:0; color:#27ae60;">FruverLife</h1>
+        <h1 style="margin:0; color:#27ae60;">Sistema de Proveedores</h1>
+      </div>
+      <button class="btn-print" onclick="window.print()"
+              style="cursor:pointer; background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:5px; font-weight:bold;">
+        IMPRIMIR REPORTE
+      </button>
+    </div>
+
+    <!-- SELECTOR DE MES -->
+    <form method="get" th:action="@{/menu/informeprov}" style="margin-bottom:20px;">
+      <label for="mes" style="font-weight:bold; margin-right:8px;">Mes:</label>
+      <input type="month" id="mes" name="mes" th:value="${mes}" onchange="this.form.submit()"
+             style="font-family:inherit; font-size:1em; padding:8px 12px; border:1px solid #ccc; border-radius:8px; width:220px; color:#2c3e50;">
+    </form>
+
+    <!-- RESUMEN -->
+    <div class="summary-boxes" style="display:flex; gap:20px; margin-bottom:30px;">
+      <div class="box" style="flex:1; padding:20px; border-radius:8px; text-align:center; color:white; background:#27ae60;">
+        <div style="font-size:0.9em; opacity:0.9;">COMPRAS DEL MES</div>
+        <h2 th:text="${'$ ' + #numbers.formatDecimal(informe.comprasTotales(), 1, 'POINT', 2, 'COMMA')}" style="margin:5px 0;">$ 0</h2>
+      </div>
+      <div class="box box-blue" style="flex:1; padding:20px; border-radius:8px; text-align:center; color:white; background:#3498db;">
+        <div style="font-size:0.9em; opacity:0.9;">PROVEEDORES ACTIVOS</div>
+        <h2 th:text="${informe.proveedoresActivos()}" style="margin:5px 0;">0</h2>
+      </div>
+      <div class="box" style="flex:1; padding:20px; border-radius:8px; text-align:center; color:white; background:#e67e22;">
+        <div style="font-size:0.9em; opacity:0.9;">PROVEEDOR CON MÁS COMPRAS</div>
+        <h2 th:text="${informe.proveedorTop()}" style="margin:5px 0;">—</h2>
+      </div>
+    </div>
+
+    <!-- TABLA POR PROVEEDOR -->
+    <div class="table-box" style="margin-bottom:30px;">
+      <table class="tabla" style="width:100%; border-collapse:collapse;">
+        <thead>
+        <tr>
+          <th>Proveedor</th>
+          <th>NIT</th>
+          <th>Estado</th>
+          <th># Compras</th>
+          <th>Total comprado</th>
+          <th>% del total</th>
+          <th>Última compra</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="f : ${informe.proveedores()}"
+            th:style="${f.proveedorId() == proveedorSel} ? 'background:#eaf6ef;' : ''">
+          <td th:text="${f.nombre()}"></td>
+          <td th:text="${f.nit() != null} ? ${f.nit()} : '—'"></td>
+          <td>
+                        <span th:text="${f.estado() != null} ? ${f.estado()} : '—'"
+                              th:style="${#strings.equalsIgnoreCase(f.estado(), 'ACTIVO')}
+                                        ? 'background:#e1f4e9; color:#1b7f4b; padding:3px 10px; border-radius:20px; font-size:0.85em; font-weight:bold;'
+                                        : 'background:#fdeaea; color:#b03a2e; padding:3px 10px; border-radius:20px; font-size:0.85em; font-weight:bold;'"></span>
+          </td>
+          <td th:text="${f.numCompras()}"></td>
+          <td th:text="'$ ' + ${#numbers.formatDecimal(f.totalComprado(), 1, 'POINT', 2, 'COMMA')}"
+              style="font-weight:bold; color:#27ae60;"></td>
+          <td>
+            <span th:text="${#numbers.formatDecimal(f.porcentaje(), 1, 1, 'COMMA')} + ' %'"></span>
+            <div style="height:6px; background:#e6eef0; border-radius:4px; margin-top:6px; min-width:80px;">
+                            <span style="display:block; height:100%; background:#27ae60; border-radius:4px;"
+                                  th:style="'display:block; height:100%; background:#27ae60; border-radius:4px; width:' + ${#numbers.formatDecimal(f.porcentaje(), 1, 0)} + '%;'"></span>
+            </div>
+          </td>
+          <td th:text="${f.ultimaCompra() != null} ? ${#dates.format(f.ultimaCompra(), 'dd/MM/yyyy')} : '—'"></td>
+          <td>
+            <a th:if="${f.numCompras() > 0}"
+               th:href="@{/menu/informeprov(mes=${mes}, proveedor=${f.proveedorId()})}"
+               style="background:#27ae60; color:#fff; font-weight:bold; text-decoration:none; padding:8px 14px; border-radius:8px; display:inline-block; white-space:nowrap;">Ver compras →</a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(informe.proveedores())}">
+          <td colspan="8" style="text-align:center; padding:20px;">No hay proveedores registrados</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- DETALLE DEL PROVEEDOR SELECCIONADO -->
+    <div class="table-box" th:if="${proveedorSel != null}">
+      <h2 style="color:#27ae60;">Detalle de compras</h2>
+      <table class="tabla" style="width:100%; border-collapse:collapse;">
+        <thead>
+        <tr>
+          <th>Código</th>
+          <th>Fecha</th>
+          <th>Detalle de Productos</th>
+          <th>Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="c : ${comprasProveedor}">
+          <td th:text="${c.codigo}"></td>
+          <td th:text="${c.fecha != null} ? ${#dates.format(c.fecha, 'dd/MM/yyyy HH:mm')} : '—'"></td>
+          <td>
+            <div th:each="d : ${c.detalle}" class="product-tag"
+                 style="background:#f0f0f0; padding:4px 10px; border-radius:20px; font-size:0.85em; display:inline-block; margin-right:5px; margin-bottom:5px;">
+              <span th:text="${d.nombre + ' (' + d.cantidad + ' × $ ' + #numbers.formatDecimal(d.precioCompra, 1, 'POINT', 2, 'COMMA') + ')'}"></span>
+            </div>
+          </td>
+          <td th:text="'$ ' + ${#numbers.formatDecimal(c.total, 1, 'POINT', 2, 'COMMA')}"
+              style="font-weight:bold; color:#27ae60;"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(comprasProveedor)}">
+          <td colspan="4" style="text-align:center; padding:20px;">Este proveedor no tiene compras en el mes</td>
+        </tr>
+        </tbody>
+      </table>
+      <p style="margin-top:12px;">
+        <a th:href="@{/menu/informeprov(mes=${mes})}" style="background:#27ae60; color:#fff; font-weight:bold; text-decoration:none; padding:8px 14px; border-radius:8px; display:inline-block;">← Cerrar detalle</a>
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

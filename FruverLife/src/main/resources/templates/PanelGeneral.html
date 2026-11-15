@@ -1,0 +1,183 @@
+<div th:fragment="contenido">
+
+  <style>
+    .panel-mes { margin-bottom:20px; }
+    .panel-mes label { font-weight:bold; margin-right:8px; }
+    .panel-mes select { font-family:inherit; font-size:1em; padding:8px 12px; border-radius:8px;
+                        border:1px solid #ccc; width:220px; color:#2c3e50; }
+
+    .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin:16px 0 20px; }
+    .kpi { background:#fff; border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,.08);
+           text-decoration:none; color:inherit; display:block; }
+    .kpi small { color:#777; display:block; }
+    .kpi strong { display:block; font-size:1.5em; margin-top:6px; }
+    .kpi .ver { font-size:.8em; color:#27ae60; margin-top:6px; }
+    a.kpi:hover { box-shadow:0 4px 14px rgba(0,0,0,.18); transform:translateY(-2px); transition:.15s; }
+
+    .graficas { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:20px; }
+    .grafica { background:#fff; border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+    .grafica.ancha { grid-column:1 / -1; }
+    .grafica canvas { max-height:280px; }
+    @media (max-width: 900px) { .graficas { grid-template-columns:1fr; } }
+  </style>
+
+  <!-- CABECERA (mismo estilo del informe de proveedores) -->
+  <div class="header"
+       style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:3px solid #27ae60; padding-bottom:15px; margin-bottom:25px;">
+    <div>
+      <h1 style="margin:0; color:#27ae60;">FruverLife</h1>
+      <h1 style="margin:0; color:#27ae60;">Panel General</h1>
+    </div>
+    <button class="btn-print" onclick="window.print()"
+            style="cursor:pointer; background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:5px; font-weight:bold;">
+      IMPRIMIR REPORTE
+    </button>
+  </div>
+
+  <!-- SELECTOR DE MES -->
+  <form class="panel-mes" th:action="@{/menu/panel}" method="get">
+    <label for="mes">Mes:</label>
+    <select id="mes" name="mes" onchange="this.form.submit()">
+      <option th:each="m : ${meses}"
+              th:value="${m.key}"
+              th:text="${m.value}"
+              th:selected="${m.key == mesSeleccionado}"></option>
+    </select>
+  </form>
+
+  <!-- TARJETAS -->
+  <div class="kpis">
+
+    <a class="kpi" th:if="${kpis.esMesActual}" th:href="@{/menu/informe-diario}">
+      <small>Ventas de hoy</small>
+      <strong th:text="'$ ' + ${#numbers.formatDecimal(kpis.ventasHoy, 1, 'POINT', 2, 'COMMA')}"></strong>
+      <span class="ver">Ver informe diario →</span>
+    </a>
+
+    <div class="kpi">
+      <small>Ventas del mes</small>
+      <strong th:text="'$ ' + ${#numbers.formatDecimal(kpis.ventasMes, 1, 'POINT', 2, 'COMMA')}"></strong>
+    </div>
+
+    <a class="kpi" th:href="@{/menu/informemer}">
+      <small>Compras del mes</small>
+      <strong th:text="'$ ' + ${#numbers.formatDecimal(kpis.comprasMes, 1, 'POINT', 2, 'COMMA')}"></strong>
+      <span class="ver">Ver informe de mercancía →</span>
+    </a>
+
+    <a class="kpi" th:href="@{/menu/informedes}">
+      <small>Pérdida por desperdicio (mes)</small>
+      <strong style="color:#c0392b"
+              th:text="'$ ' + ${#numbers.formatDecimal(kpis.desperdicioMes, 1, 'POINT', 2, 'COMMA')}"></strong>
+      <span class="ver">Ver informe de desperdicios →</span>
+    </a>
+
+    <div class="kpi">
+      <small>Utilidad del mes</small>
+      <strong th:text="'$ ' + ${#numbers.formatDecimal(kpis.utilidadMes, 1, 'POINT', 2, 'COMMA')}"></strong>
+      <small>Ventas − costo de lo vendido − desperdicio</small>
+    </div>
+
+    <div class="kpi">
+      <small>Flujo de caja del mes</small>
+      <strong th:text="'$ ' + ${#numbers.formatDecimal(kpis.flujoCajaMes, 1, 'POINT', 2, 'COMMA')}"></strong>
+      <small>Ventas − compras − desperdicio</small>
+    </div>
+
+    <div class="kpi"><small>Clientes</small><strong th:text="${kpis.clientes}"></strong></div>
+
+    <a class="kpi" th:href="@{/menu/informeprov(mes=${mesSeleccionado})}">
+      <small>Proveedores activos</small>
+      <strong th:text="${kpis.proveedoresActivos}"></strong>
+      <span class="ver">Ver informe de proveedores →</span>
+    </a>
+
+    <a class="kpi" th:href="@{/menu/informemer}">
+      <small>Productos con stock bajo</small>
+      <strong th:text="${kpis.stockBajo}"></strong>
+      <span class="ver">Ver cuáles →</span>
+    </a>
+  </div>
+
+  <!-- GRÁFICAS -->
+  <div class="graficas">
+    <div class="grafica ancha"><h3>Ventas por día del mes</h3><canvas id="gDia"></canvas></div>
+    <div class="grafica"><h3>Ventas vs compras (6 meses)</h3><canvas id="gMeses"></canvas></div>
+    <div class="grafica"><h3>Top 5 productos vendidos</h3><canvas id="gTop"></canvas></div>
+    <div class="grafica"><h3>Desperdicio por motivo</h3><canvas id="gMotivos"></canvas></div>
+    <div class="grafica"><h3>Ventas por categoría</h3><canvas id="gCategorias"></canvas></div>
+  </div>
+
+  <!-- ÚLTIMOS MOVIMIENTOS -->
+  <div class="grafica">
+    <h3>Últimos movimientos del mes</h3>
+    <table class="tabla">
+      <thead>
+      <tr><th>Tipo</th><th>Código</th><th>Fecha</th><th>Monto</th></tr>
+      </thead>
+      <tbody>
+      <tr th:each="m : ${movimientos}">
+        <td th:text="${m.tipo}"></td>
+        <td th:text="${m.codigo}"></td>
+        <td th:text="${#dates.format(m.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+        <td th:text="'$ ' + ${#numbers.formatDecimal(m.monto, 1, 'POINT', 2, 'COMMA')}"></td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(movimientos)}"><td colspan="4">Sin movimientos en este mes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+  <script th:inline="javascript">
+    (function () {
+      const datosDia       = /*[[${ventasDia}]]*/ {};
+      const datosVentas    = /*[[${ventasCompras['ventas']}]]*/ {};
+      const datosCompras   = /*[[${ventasCompras['compras']}]]*/ {};
+      const datosTop       = /*[[${topProductos}]]*/ {};
+      const datosMotivos   = /*[[${motivos}]]*/ {};
+      const datosCategoria = /*[[${categorias}]]*/ {};
+
+      const pesos = v => '$ ' + Number(v).toLocaleString('es-CO');
+
+      const ejeDinero = { y: { beginAtZero: true, grace: '10%', ticks: { callback: pesos } } };
+      const globoDinero = { callbacks: { label: c => c.dataset.label + ': ' + pesos(c.parsed.y) } };
+      const globoDona = { callbacks: { label: c => c.label + ': ' + pesos(c.parsed) } };
+
+      new Chart(document.getElementById('gDia'), {
+        type: 'line',
+        data: { labels: Object.keys(datosDia),
+                datasets: [{ label: 'Ventas', data: Object.values(datosDia), tension: 0 }] },
+        options: { scales: ejeDinero, plugins: { tooltip: globoDinero } }
+      });
+
+      new Chart(document.getElementById('gMeses'), {
+        type: 'bar',
+        data: { labels: Object.keys(datosVentas),
+                datasets: [{ label: 'Ventas',  data: Object.values(datosVentas) },
+                           { label: 'Compras', data: Object.values(datosCompras) }] },
+        options: { scales: ejeDinero, plugins: { tooltip: globoDinero } }
+      });
+
+      new Chart(document.getElementById('gTop'), {
+        type: 'bar',
+        data: { labels: Object.keys(datosTop),
+                datasets: [{ label: 'Cantidad vendida', data: Object.values(datosTop), maxBarThickness: 40 }] },
+        options: { indexAxis: 'y', scales: { x: { beginAtZero: true } } }
+      });
+
+      new Chart(document.getElementById('gMotivos'), {
+        type: 'doughnut',
+        data: { labels: Object.keys(datosMotivos),
+                datasets: [{ data: Object.values(datosMotivos) }] },
+        options: { plugins: { tooltip: globoDona } }
+      });
+
+      new Chart(document.getElementById('gCategorias'), {
+        type: 'doughnut',
+        data: { labels: Object.keys(datosCategoria),
+                datasets: [{ data: Object.values(datosCategoria) }] },
+        options: { plugins: { tooltip: globoDona } }
+      });
+    })();
+  </script>
+</div>

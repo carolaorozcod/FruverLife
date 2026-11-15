@@ -7,6 +7,34 @@
     <!-- CSS base unificado -->
     <link rel="stylesheet" th:href="@{/EstiloAdmi.css?v=7}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- IMPRESIÓN: al imprimir o guardar en PDF no se incluye el menú lateral -->
+    <style media="print">
+
+        /* Tamaño de hoja y márgenes */
+        @page { size: A4; margin: 10mm; }
+
+        /* 1) Ocultar el menú lateral, el cierre de sesión y el botón de imprimir */
+        .barra,
+        aside,
+        .cerrar-sesion,
+        .btn-print { display: none !important; }
+
+        /* 2) Que el contenido use todo el ancho de la hoja y no se corte */
+        .Administrador { display: block !important; height: auto !important; overflow: visible !important; }
+        .contenido     { margin: 0 !important; padding: 0 !important; width: 100% !important;
+                         max-width: 100% !important; height: auto !important; overflow: visible !important; }
+
+        /* 3) Conservar los colores (tarjetas, cabeceras de tabla) */
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        /* 4) No partir tarjetas, gráficas ni filas entre dos páginas */
+        .kpi, .grafica, .table-box, tr { break-inside: avoid; page-break-inside: avoid; }
+
+        /* 5) Las gráficas se ajustan al ancho de la hoja */
+        canvas { max-width: 100% !important; height: auto !important; }
+
+    </style>
 </head>
 
 <body>
@@ -16,21 +44,23 @@
     <!-- ===== SIDEBAR ===== -->
     <aside class="barra">
         <nav class="Acciones">
-        <div class="perfil">
-            <h2 class="logo">
-                <span class="blanco">Fruver</span>
-                <span class="verde">Life</span>
-            </h2>
+            <div class="perfil">
+                <h2 class="logo">
+                    <span class="blanco">Fruver</span>
+                    <span class="verde">Life</span>
+                </h2>
 
-            <div class="info-usuario">
-                <span th:text="${session.usuarioLogueado?.accesoSistema?.usuario}"></span>
-                <small th:text="${session.usuarioLogueado?.accesoSistema?.roles != null} ? ${#strings.listJoin(session.usuarioLogueado.accesoSistema.roles, ', ')} : ''"></small>
+                <div class="info-usuario">
+                    <span th:text="${session.usuarioLogueado?.accesoSistema?.usuario}"></span>
+                    <small th:text="${session.usuarioLogueado?.accesoSistema?.roles != null} ? ${#strings.listJoin(session.usuarioLogueado.accesoSistema.roles, ', ')} : ''"></small>
+                </div>
             </div>
-        </div>
 
 
             <ul>
+                <li><a th:href="@{/menu/panel}">Panel general</a></li>
                 <li><a th:href="@{/menu/informemer}">Informe de mercancía</a></li>
+                <li><a th:href="@{/menu/informeprov}">Informe de Proveedores</a></li>
                 <li><a th:href="@{/menu/informe-diario}">Informe Diario</a></li>
                 <li><a th:href="@{/menu/informedes}">Informe de Desperdicios</a></li>
                 <li><a th:href="@{/menu/usuarios}"> Registro de Usuario</a></li>

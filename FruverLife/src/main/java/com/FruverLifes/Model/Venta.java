@@ -27,6 +27,7 @@ public class Venta {
     private Double descuento = 0.0;
     private Integer puntosUtilizados = 0;
     private Integer puntosGanados = 0;
+    private Double descuentoEmpleado = 0.0;
 
     public Venta() {}
 
@@ -53,6 +54,8 @@ public class Venta {
     public void setPuntosUtilizados(Integer puntosUtilizados) { this.puntosUtilizados = puntosUtilizados; }
     public Integer getPuntosGanados() { return puntosGanados;}
     public void setPuntosGanados(Integer puntosGanados) { this.puntosGanados = puntosGanados; }
+    public Double getDescuentoEmpleado() { return descuentoEmpleado; }
+    public void setDescuentoEmpleado(Double descuentoEmpleado) { this.descuentoEmpleado = descuentoEmpleado; }
 
     // --- SUBDOCUMENTO PARA EL DETALLE ---
     public static class DetalleVenta {

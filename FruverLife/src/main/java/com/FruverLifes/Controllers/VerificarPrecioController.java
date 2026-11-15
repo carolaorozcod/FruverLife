@@ -10,6 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/verificar")
 public class VerificarPrecioController {
@@ -28,12 +31,33 @@ public class VerificarPrecioController {
         }
 
         model.addAttribute("usuario", usuario);
+        // Lista para el buscador por nombre (solo productos activos)
+        model.addAttribute("productos", productoRepository.findAll().stream()
+                .filter(p -> "ACTIVO".equalsIgnoreCase(p.getEstado()))
+                .toList());
         model.addAttribute("contenido", "VerificarPrecio");
 
         return "layout/PlantillaCajero";
     }
 
-    // BUSCAR PRODUCTO
+    // LISTA PARA EL BUSCADOR (nombre y código de los productos activos)
+    @GetMapping("/productos")
+    @ResponseBody
+    public List<Map<String, String>> productosActivos(HttpSession session) {
+
+        if (session.getAttribute("usuarioLogueado") == null) {
+            return List.of();
+        }
+
+        return productoRepository.findAll().stream()
+                .filter(p -> "ACTIVO".equalsIgnoreCase(p.getEstado()))
+                .map(p -> Map.of(
+                        "nombre", p.getNombre() != null ? p.getNombre() : "",
+                        "codigo", p.getCodigo() != null ? p.getCodigo() : ""))
+                .toList();
+    }
+
+    // BUSCAR PRODUCTO (el nombre elegido en el buscador llena el código)
     @PostMapping
     public String buscarProducto(@RequestParam String codigo,
                                  HttpSession session,

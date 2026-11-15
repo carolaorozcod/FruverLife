@@ -71,36 +71,59 @@
 
     <!-- PANEL DERECHO: ESTADO DEL SISTEMA -->
     <div class="lista">
-
       <h2>Estado del Sistema</h2>
-
       <table>
         <thead>
         <tr>
           <th>Producto</th>
           <th>Stock Actual</th>
+          <th>Proveedores</th>
+          <th>Cantidad ingresada</th>
+          <th>Precio de compra</th>
         </tr>
         </thead>
 
         <tbody>
-        <tr th:each="p : ${productos}">
-          <td th:text="${p.nombre}">Nombre del Producto</td>
-          <td>
-            <!-- El stock se pone rojo si es crítico (5 o menos) -->
-            <span th:text="${p.cantidad}"
-                  th:style="${p.cantidad != null and p.cantidad <= 5} ? 'color: var(--rojo); font-weight: bold;' : ''">
-            </span>
-            <span th:text="${p.unidadMedida}"></span>
-          </td>
-        </tr>
+        <th:block th:each="p : ${productos}" th:with="provs=${proveedoresPorProducto[p.id]}">
+
+          <!-- Producto SIN proveedores: una sola fila -->
+          <tr th:if="${provs == null or #lists.isEmpty(provs)}">
+            <td th:text="${p.nombre}">Nombre del Producto</td>
+            <td>
+        <span th:text="${p.cantidad}"
+              th:style="${p.cantidad != null and p.cantidad <= 5} ? 'color: var(--rojo); font-weight: bold;' : ''"></span>
+              <span th:text="${p.unidadMedida}"></span>
+            </td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+
+          <!-- Producto CON proveedores: una fila por proveedor -->
+          <tr th:if="${provs != null and !#lists.isEmpty(provs)}" th:each="x, st : ${provs}">
+            <td th:if="${st.first}" th:rowspan="${provs.size()}" th:text="${p.nombre}">Nombre del Producto</td>
+            <td th:if="${st.first}" th:rowspan="${provs.size()}">
+        <span th:text="${p.cantidad}"
+              th:style="${p.cantidad != null and p.cantidad <= 5} ? 'color: var(--rojo); font-weight: bold;' : ''"></span>
+              <span th:text="${p.unidadMedida}"></span>
+            </td>
+            <td th:text="${x.proveedor()}"></td>
+            <td style="white-space:nowrap;"
+                th:text="${#numbers.formatDecimal(x.cantidad(), 1, 'POINT', 2, 'COMMA')} + ' ' + ${p.unidadMedida}"></td>
+            <td style="white-space:nowrap;"
+                th:text="${x.precio() != null} ? '$ ' + ${#numbers.formatDecimal(x.precio(), 1, 'POINT', 2, 'COMMA')} : '-'"></td>
+          </tr>
+
+        </th:block>
 
         <tr th:if="${#lists.isEmpty(productos)}">
-          <td colspan="2" style="text-align: center; padding: 20px;">
+          <td colspan="5" style="text-align: center; padding: 20px;">
             No hay productos registrados para mostrar stock.
           </td>
         </tr>
         </tbody>
       </table>
+
 
     </div>
 

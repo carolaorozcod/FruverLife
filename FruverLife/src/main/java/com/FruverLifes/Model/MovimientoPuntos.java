@@ -1,4 +1,3 @@
-
 package com.FruverLifes.Model;
 
 import org.springframework.data.annotation.Id;

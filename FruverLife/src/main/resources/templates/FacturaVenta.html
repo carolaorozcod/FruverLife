@@ -37,7 +37,64 @@
         </tbody>
     </table>
 
+    <!-- SUBTOTAL Y DESCUENTOS (solo si hubo algún descuento) -->
+    <div th:if="${(venta.descuentoEmpleado != null and venta.descuentoEmpleado > 0)
+                  or (venta.puntosUtilizados != null and venta.puntosUtilizados > 0)}"
+         style="margin-top:15px; text-align:right;">
+
+        <p style="margin:4px 0;">
+            Subtotal:
+            <strong th:text="'$ ' + ${#numbers.formatDecimal(venta.total + (venta.descuento != null ? venta.descuento : 0) + (venta.descuentoEmpleado != null ? venta.descuentoEmpleado : 0), 1, 'POINT', 2, 'COMMA')}"></strong>
+        </p>
+
+        <p th:if="${venta.descuentoEmpleado != null and venta.descuentoEmpleado > 0}"
+           style="margin:4px 0; color:#168b4b;">
+            Descuento usuario del sistema (25 %):
+            <strong th:text="'- $ ' + ${#numbers.formatDecimal(venta.descuentoEmpleado, 1, 'POINT', 2, 'COMMA')}"></strong>
+        </p>
+
+        <p th:if="${venta.puntosUtilizados != null and venta.puntosUtilizados > 0}"
+           style="margin:4px 0; color:#168b4b;">
+            Descuento por puntos:
+            <strong th:text="'- $ ' + ${#numbers.formatDecimal(venta.descuento != null ? venta.descuento : 0, 1, 'POINT', 2, 'COMMA')}"></strong>
+        </p>
+
+    </div>
+
     <h2>Total: $ <span th:text="${#numbers.formatDecimal(venta.total, 1, 'POINT', 2, 'COMMA')}"></span></h2>
+
+    <!-- PROGRAMA DE PUNTOS -->
+    <div th:if="${cliente != null}"
+         style="margin:20px 0; padding:15px 20px; background:#f0fff5;
+                border:1px solid #c9ead5; border-radius:12px;">
+
+        <h3 style="color:#168b4b; margin:0 0 12px;">Programa de Puntos FruverLife</h3>
+
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span>Puntos ganados en esta compra:</span>
+            <strong style="color:#168b4b;"
+                    th:text="'+ ' + ${#numbers.formatInteger(venta.puntosGanados != null ? venta.puntosGanados : 0, 1, 'POINT')}">+ 0</strong>
+        </div>
+
+        <div th:if="${venta.puntosUtilizados != null and venta.puntosUtilizados > 0}"
+             style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span>Puntos redimidos:</span>
+            <strong style="color:#c0392b;"
+                    th:text="'- ' + ${#numbers.formatInteger(venta.puntosUtilizados, 1, 'POINT')}">- 0</strong>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;
+                    padding-top:8px; border-top:1px solid #c9ead5;">
+            <span><strong>Puntos disponibles:</strong></span>
+            <strong th:text="${#numbers.formatInteger(cliente.puntos, 1, 'POINT')}">0</strong>
+        </div>
+
+        <p style="font-size:13px; color:#555; margin:8px 0 0;">
+            Cada $10.000 pagados suman 1.000 puntos. Con 10.000 puntos puedes redimir
+            hasta el 30 % de una compra.
+        </p>
+
+    </div>
 
     <button onclick="window.print()">Imprimir Factura</button>
 

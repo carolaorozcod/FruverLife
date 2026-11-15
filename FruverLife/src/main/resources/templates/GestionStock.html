@@ -41,10 +41,13 @@
                        required>
 
                 <label>Categoría:</label>
-                <input type="text"
-                       name="categoria"
-                       th:value="${producto != null ? producto.categoria : ''}"
-                       placeholder="Ej: Frutas, Verduras">
+                <select name="categoria" required>
+                    <option value="">Seleccione una categoría</option>
+                    <option value="Frutas"
+                            th:selected="${producto != null and producto.categoria == 'Frutas'}">Frutas</option>
+                    <option value="Verduras"
+                            th:selected="${producto != null and producto.categoria == 'Verduras'}">Verduras</option>
+                </select>
 
                 <label>Unidad de medida:</label>
                 <input type="text"
@@ -52,11 +55,6 @@
                        th:value="${producto != null ? producto.unidadMedida : ''}"
                        placeholder="Ej: kg, unidad, libra">
 
-                <label>Precio de compra:</label>
-                <input type="number" step="0.01" min="0"
-                       name="precioCompra"
-                       th:value="${producto != null ? producto.precioCompra : ''}"
-                       required>
 
                 <label>Precio de venta:</label>
                 <input type="number" step="0.01" min="0"

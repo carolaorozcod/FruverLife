@@ -42,13 +42,39 @@
                 </div>
 
                 <div class="informe-summary-card">
-                    <span>TOTAL DE STOCK</span>
-                    <h2 th:text="${#numbers.formatDecimal(totalStock, 1, 'POINT', 2, 'COMMA')}">0</h2>
+                    <span>VALOR DEL INVENTARIO</span>
+                    <h2 th:text="'$ ' + ${#numbers.formatDecimal(valorInventario, 1, 'POINT', 2, 'COMMA')}">$ 0</h2>
+                </div>
+
+                <!-- Rojo: tuvieron mercancía y se acabó -->
+                <div class="informe-summary-card"
+                     th:style="${agotados > 0} ? 'background:#fdeaea; border-left-color:#e74c3c;' : ''">
+                    <span th:style="${agotados > 0} ? 'color:#c0392b;' : ''">AGOTADOS</span>
+                    <h2 th:style="${agotados > 0} ? 'color:#c0392b;' : ''" th:text="${agotados}">0</h2>
+                </div>
+
+                <!-- Ámbar: nunca se les ha ingresado mercancía -->
+                <div class="informe-summary-card"
+                     th:style="${sinStock > 0} ? 'background:#fff6dd; border-left-color:#f39c12;' : ''">
+                    <span th:style="${sinStock > 0} ? 'color:#9a6b00;' : ''">SIN STOCK</span>
+                    <h2 th:style="${sinStock > 0} ? 'color:#9a6b00;' : ''" th:text="${sinStock}">0</h2>
                 </div>
 
             </div>
 
         </div>
+
+        <!-- LEYENDA -->
+        <p style="margin:0 0 10px; font-size:0.9em; color:#607080;">
+            <span style="display:inline-block; width:12px; height:12px; background:#e1f4e9; border:1px solid #27ae60; border-radius:3px; vertical-align:middle;"></span>
+            <strong>Disponible:</strong> tiene existencias
+            &nbsp;&nbsp;
+            <span style="display:inline-block; width:12px; height:12px; background:#fdeaea; border:1px solid #e74c3c; border-radius:3px; vertical-align:middle;"></span>
+            <strong>Agotado:</strong> tiene proveedor pero no le queda cantidad
+            &nbsp;&nbsp;
+            <span style="display:inline-block; width:12px; height:12px; background:#fff6dd; border:1px solid #f39c12; border-radius:3px; vertical-align:middle;"></span>
+            <strong>Sin stock:</strong> no tiene proveedor (nunca se le ha ingresado mercancía)
+        </p>
 
         <!-- TABLA -->
         <div class="table-box">
@@ -58,24 +84,81 @@
                 <thead>
                 <tr>
                     <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Precio</th>
+                    <th>Stock actual</th>
+                    <th>Estado</th>
+                    <th>Proveedor</th>
+                    <th>Cantidad ingresada</th>
+                    <th>Precio de compra</th>
+                    <th>Precio de venta</th>
                 </tr>
                 </thead>
 
                 <tbody>
 
-                <tr th:each="p : ${productos}">
-                    <td th:text="${p.nombre}"></td>
-                    <td>
-                        <span th:text="${p.cantidad}"></span>
-                        <span th:text="${p.unidadMedida}"></span>
-                    </td>
-                    <td th:text="${p.precioVenta != null} ? '$ ' + ${#numbers.formatDecimal(p.precioVenta, 1, 'POINT', 2, 'COMMA')} : '-'"></td>
-                </tr>
+                <th:block th:each="p : ${productos}" th:with="provs=${proveedoresPorProducto[p.id]}">
+                    <th:block th:with="cant=${p.cantidad != null ? p.cantidad : 0.0},
+                                   sinProv=${provs == null or #lists.isEmpty(provs)}">
+                        <th:block th:with="agotado=${!sinProv and cant le 0}">
+
+                            <!-- Producto SIN proveedores: una sola fila -->
+                            <tr th:if="${sinProv}" style="background:#fff9e6;">
+
+                                <td th:text="${p.nombre}"></td>
+
+                                <td>
+                            <span th:text="${#numbers.formatDecimal(cant, 1, 'POINT', 2, 'COMMA')}"
+                                  style="color:#9a6b00; font-weight:bold;"></span>
+                                    <span th:text="${p.unidadMedida}"></span>
+                                </td>
+
+                                <td>
+                                    <span style="background:#fff6dd; color:#9a6b00; padding:3px 10px; border-radius:20px; font-size:0.8em; font-weight:bold;">SIN STOCK</span>
+                                </td>
+
+                                <td>—</td>
+                                <td>—</td>
+                                <td>—</td>
+
+                                <td th:text="${p.precioVenta != null} ? '$ ' + ${#numbers.formatDecimal(p.precioVenta, 1, 'POINT', 2, 'COMMA')} : '-'"></td>
+                            </tr>
+
+                            <!-- Producto CON proveedores: una fila por proveedor -->
+                            <tr th:if="${!sinProv}" th:each="x, st : ${provs}"
+                                th:style="${agotado} ? 'background:#fff1f0;' : ''">
+
+                                <td th:if="${st.first}" th:rowspan="${provs.size()}" th:text="${p.nombre}"></td>
+
+                                <td th:if="${st.first}" th:rowspan="${provs.size()}">
+                            <span th:text="${#numbers.formatDecimal(cant, 1, 'POINT', 2, 'COMMA')}"
+                                  th:style="${agotado} ? 'color:#c0392b; font-weight:bold;' : ''"></span>
+                                    <span th:text="${p.unidadMedida}"></span>
+                                </td>
+
+                                <td th:if="${st.first}" th:rowspan="${provs.size()}">
+                            <span th:if="${agotado}"
+                                  style="background:#e74c3c; color:#fff; padding:3px 10px; border-radius:20px; font-size:0.8em; font-weight:bold;">AGOTADO</span>
+                                    <span th:if="${!agotado}"
+                                          style="background:#e1f4e9; color:#1b7f4b; padding:3px 10px; border-radius:20px; font-size:0.8em; font-weight:bold;">DISPONIBLE</span>
+                                </td>
+
+                                <td th:text="${x.proveedor()}"></td>
+
+                                <td style="white-space:nowrap;"
+                                    th:text="${#numbers.formatDecimal(x.cantidad(), 1, 'POINT', 2, 'COMMA')} + ' ' + ${p.unidadMedida}"></td>
+
+                                <td style="white-space:nowrap;"
+                                    th:text="${x.precio() != null} ? '$ ' + ${#numbers.formatDecimal(x.precio(), 1, 'POINT', 2, 'COMMA')} : '—'"></td>
+
+                                <td th:if="${st.first}" th:rowspan="${provs.size()}" style="white-space:nowrap;"
+                                    th:text="${p.precioVenta != null} ? '$ ' + ${#numbers.formatDecimal(p.precioVenta, 1, 'POINT', 2, 'COMMA')} : '-'"></td>
+                            </tr>
+
+                        </th:block>
+                    </th:block>
+                </th:block>
 
                 <tr th:if="${#lists.isEmpty(productos)}">
-                    <td colspan="3" class="sin-registros">
+                    <td colspan="7" class="sin-registros">
                         No hay productos registrados
                     </td>
                 </tr>

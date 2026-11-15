@@ -1,4 +1,3 @@
-
 package com.FruverLifes.Service;
 
 import com.FruverLifes.Model.Persona;
@@ -22,6 +21,9 @@ import java.util.List;
 @Service
 public class VentaService {
 
+    // Descuento para clientes que son usuarios del sistema (cajero, administrador, gerente)
+    private static final double PORCENTAJE_DESCUENTO_USUARIO = 0.25;
+
     @Autowired
     private VentaRepository ventaRepository;
 
@@ -33,6 +35,23 @@ public class VentaService {
 
     @Autowired
     private PuntosService puntosService;
+
+
+    // ¿EL CLIENTE ES UN USUARIO ACTIVO DEL SISTEMA?
+    public boolean esUsuarioDelSistema(Persona persona) {
+        if (persona == null || persona.getAccesoSistema() == null) {
+            return false;
+        }
+        Persona.AccesoSistema acceso = persona.getAccesoSistema();
+
+        return !Boolean.FALSE.equals(acceso.getHabilitado())
+                && "ACTIVO".equalsIgnoreCase(acceso.getEstado());
+    }
+
+    // DESCUENTO DEL 25 % SOBRE EL SUBTOTAL
+    public double calcularDescuentoUsuario(double subtotal) {
+        return Math.round(subtotal * PORCENTAJE_DESCUENTO_USUARIO * 100.0) / 100.0;
+    }
 
 
     // FINALIZAR VENTA CON PUNTOS
@@ -109,7 +128,16 @@ public class VentaService {
             subtotal += d.getSubtotal();
         }
 
-        // 2. VALIDAR PUNTOS SOLICITADOS
+        // 2. DESCUENTO DEL 25 % SI EL CLIENTE ES USUARIO DEL SISTEMA
+        double descuentoUsuario =
+                esUsuarioDelSistema(clienteActual)
+                        ? calcularDescuentoUsuario(subtotal)
+                        : 0;
+
+        // Valor de la compra ya con ese descuento: sobre él se calculan los puntos
+        double baseConDescuento = subtotal - descuentoUsuario;
+
+        // 3. VALIDAR PUNTOS SOLICITADOS
         if (puntosSolicitados < 0) {
 
             throw new RuntimeException(
@@ -136,7 +164,7 @@ public class VentaService {
             // Verificar límite del 30%
             double descuentoMaximo =
                     puntosService.calcularDescuentoMaximo(
-                            subtotal);
+                            baseConDescuento);
 
             if (puntosSolicitados > descuentoMaximo) {
 
@@ -145,17 +173,17 @@ public class VentaService {
             }
         }
 
-        // 3. CALCULAR DESCUENTO Y TOTAL
+        // 4. CALCULAR DESCUENTO POR PUNTOS Y TOTAL
         double descuento = puntosSolicitados;
 
-        double totalPagado = subtotal - descuento;
+        double totalPagado = baseConDescuento - descuento;
 
         if (totalPagado < 0) {
             throw new RuntimeException(
                     "El total de la compra no puede ser negativo");
         }
 
-        // 4. CONSTRUIR LA VENTA
+        // 5. CONSTRUIR LA VENTA
         long ahora = System.currentTimeMillis();
 
         Venta venta = new Venta();
@@ -169,28 +197,30 @@ public class VentaService {
 
         venta.setDetalle(detalleFinal);
 
+        venta.setDescuentoEmpleado(descuentoUsuario);
+
         venta.setDescuento(descuento);
 
         venta.setPuntosUtilizados(puntosSolicitados);
 
         venta.setTotal(totalPagado);
 
-        // 5. GUARDAR VENTA
+        // 6. GUARDAR VENTA
         Venta guardada =
                 ventaRepository.save(venta);
 
-        // 6. REDIMIR PUNTOS
+        // 7. REDIMIR PUNTOS
         if (puntosSolicitados > 0) {
 
             puntosService.redimirPuntos(
                     clienteActual,
                     guardada,
                     puntosSolicitados,
-                    subtotal
+                    baseConDescuento
             );
         }
 
-        // 7. ACUMULAR PUNTOS SOBRE EL TOTAL PAGADO
+        // 8. ACUMULAR PUNTOS SOBRE EL TOTAL PAGADO
         int puntosGanados =
                 puntosService.acumularPuntos(
                         clienteActual,
@@ -202,7 +232,7 @@ public class VentaService {
 
         ventaRepository.save(guardada);
 
-        // 8. DESCONTAR INVENTARIO
+        // 9. DESCONTAR INVENTARIO
         for (int i = 0; i < productos.size(); i++) {
 
             Producto p = productos.get(i);

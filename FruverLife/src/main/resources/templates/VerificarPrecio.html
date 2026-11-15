@@ -12,18 +12,73 @@
 
         <form th:action="@{/verificar}" method="post">
 
-            <label>Código Producto:</label>
+            <label>Nombre Producto</label>
+            <input type="text" id="nombreProducto" list="listaProductos"
+                   placeholder="Escriba el nombre del producto" autocomplete="off" autofocus required>
+            <datalist id="listaProductos">
+                <option th:each="p : ${productos}"
+                        th:value="${p.nombre}"
+                        th:text="${p.codigo}"
+                        th:attr="data-codigo=${p.codigo}"></option>
+            </datalist>
 
-            <input type="text"
-                   name="codigo"
-                   placeholder="Ingrese código"
-                   required>
+            <input type="hidden" id="codigoProducto" name="codigo">
 
-            <button type="submit" class="btn-principal">
+            <button type="submit" id="btnBuscar" class="btn-principal" disabled>
                 Buscar Producto
             </button>
 
         </form>
+
+        <script th:inline="javascript">
+            (function () {
+                const nombre = document.getElementById('nombreProducto');
+                const lista  = document.getElementById('listaProductos');
+                const codigo = document.getElementById('codigoProducto');
+                const boton  = document.getElementById('btnBuscar');
+
+                // Si la página no trajo los productos, los pide al servidor
+                if (lista.options.length === 0) {
+                    fetch(/*[[@{/verificar/productos}]]*/ '/verificar/productos', { credentials: 'same-origin' })
+                        .then(r => r.ok ? r.json() : [])
+                        .then(items => {
+                            items.forEach(it => {
+                                const o = document.createElement('option');
+                                o.value = it.nombre;
+                                o.textContent = it.codigo;
+                                o.dataset.codigo = it.codigo;
+                                lista.appendChild(o);
+                            });
+                        })
+                        .catch(() => {});
+                }
+
+                function actualizar() {
+                    const texto = nombre.value.trim().toLowerCase();
+                    const opciones = Array.from(lista.options);
+
+                    // 1) Nombre exacto
+                    let elegida = opciones.find(o => o.value.toLowerCase() === texto);
+
+                    // 2) Si solo hay una coincidencia parcial, se toma esa
+                    if (!elegida && texto.length >= 2) {
+                        const parecidas = opciones.filter(o => o.value.toLowerCase().includes(texto));
+                        if (parecidas.length === 1) elegida = parecidas[0];
+                    }
+
+                    if (elegida) {
+                        codigo.value = elegida.dataset.codigo || '';
+                        boton.disabled = false;
+                    } else {
+                        codigo.value = '';
+                        boton.disabled = true;
+                    }
+                }
+
+                nombre.addEventListener('input', actualizar);
+                nombre.addEventListener('change', actualizar);
+            })();
+        </script>
 
         <div th:if="${error}" class="mensaje-tabla error">
             <span th:text="${error}"></span>
@@ -36,11 +91,6 @@
             <div class="producto-card-precio">
 
                 <div class="info-precio">
-                    <span>Código</span>
-                    <p th:text="${producto.codigo}"></p>
-                </div>
-
-                <div class="info-precio">
                     <span>Nombre</span>
                     <p th:text="${producto.nombre}"></p>
                 </div>
@@ -49,11 +99,6 @@
                     <span>Precio</span>
                     <p class="precio-verde"
                        th:text="${producto.precioVenta != null} ? '$ ' + ${#numbers.formatDecimal(producto.precioVenta, 1, 'POINT', 2, 'COMMA')} : 'Sin precio'"></p>
-                </div>
-
-                <div class="info-precio">
-                    <span>Stock</span>
-                    <p th:text="${producto.cantidad + ' ' + (producto.unidadMedida != null ? producto.unidadMedida : 'unidades')}"></p>
                 </div>
 
             </div>

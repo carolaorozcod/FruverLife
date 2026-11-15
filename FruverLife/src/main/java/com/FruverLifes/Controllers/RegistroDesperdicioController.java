@@ -112,5 +112,8 @@ public class RegistroDesperdicioController {
         model.addAttribute("responsables", responsables);
         model.addAttribute("totalGeneral", registroService.total());
         model.addAttribute("contenido", "Registrodesperdicios");
+        model.addAttribute("productos", productoService.listarProductos().stream()
+                .filter(p -> "ACTIVO".equalsIgnoreCase(p.getEstado()))
+                .toList());
     }
 }

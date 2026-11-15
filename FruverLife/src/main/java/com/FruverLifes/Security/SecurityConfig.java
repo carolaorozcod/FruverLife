@@ -42,6 +42,7 @@ public class SecurityConfig {
                         // Login y logout
                         .requestMatchers("/auth/**").permitAll()
 
+
                         // Archivos estáticos
                         .requestMatchers(
                                 "/EstiloAdmi.css",
@@ -52,6 +53,8 @@ public class SecurityConfig {
                                 "/images/**",
                                 "/favicon.ico"
                         ).permitAll()
+
+                        .requestMatchers("/menu/panel").hasAnyRole("GERENTE", "ADMINISTRADOR")
 
                         // ADMINISTRADOR
                         .requestMatchers(
@@ -72,7 +75,9 @@ public class SecurityConfig {
                                 "/menu/informemer",
                                 "/menu/informe-diario",
                                 "/menu/informedes",
+                                "/menu/informeprov",        // <-- NUEVA
                                 "/menu/usuarios",
+                                "/menu/panel",
                                 "/usuarios/**"
                         ).hasRole("GERENTE")
 

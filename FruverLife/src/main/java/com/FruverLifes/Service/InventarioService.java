@@ -9,9 +9,7 @@ import com.FruverLifes.Repositories.ProductoRespository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class InventarioService {
@@ -24,6 +22,13 @@ public class InventarioService {
 
     @Autowired
     private PersonasRepositories personasRepository;
+
+    /**
+     * Un proveedor que ha suministrado un producto:
+     * - precio y fecha: los de su compra más reciente
+     * - cantidad: el total que ese proveedor ha ingresado de ese producto
+     */
+    public record ProveedorProducto(String proveedorId, String proveedor, Double precio, Date fecha, Double cantidad) {}
 
     public Compra registrarCompra(Compra form, String usuarioId) {
 
@@ -83,7 +88,7 @@ public class InventarioService {
             total += d.getSubtotal();
         }
 
-        // 3. Armar y guardar la compra
+        // 3. Armar y guardar la compra (cada compra conserva su propio proveedor)
         Compra compra = new Compra();
         compra.setCodigo("COM-" + System.currentTimeMillis());
         compra.setFecha(new Date());
@@ -97,10 +102,67 @@ public class InventarioService {
         // 4. Sumar el stock
         for (int i = 0; i < productos.size(); i++) {
             Producto p = productos.get(i);
-            p.setCantidad(p.getCantidad() + detalleFinal.get(i).getCantidad());
+            double actual = p.getCantidad() != null ? p.getCantidad() : 0;
+            p.setCantidad(actual + detalleFinal.get(i).getCantidad());
+            p.setPrecioCompra(detalleFinal.get(i).getPrecioCompra());   // último precio de compra
             productoRepository.save(p);
         }
 
         return compra;
+    }
+
+    /**
+     * id del producto -> TODOS los proveedores que lo han suministrado.
+     * Por cada proveedor: último precio, fecha de su última compra y
+     * la cantidad total que ha ingresado de ese producto.
+     * Sin repetir proveedores y con el más reciente primero.
+     */
+    public Map<String, List<ProveedorProducto>> proveedoresPorProducto() {
+        Map<String, List<ProveedorProducto>> resultado = new HashMap<>();
+        Map<String, String> nombres = new HashMap<>();   // evita repetir consultas
+
+        // Las compras vienen de la más reciente a la más antigua
+        for (Compra c : compraRepository.findAllByOrderByFechaDesc()) {
+            if (c.getDetalle() == null || c.getProveedorId() == null) continue;
+
+            final String provId = c.getProveedorId();
+            String nombre = nombres.computeIfAbsent(provId, id ->
+                    personasRepository.findById(id)
+                            .map(Persona::getNombre)
+                            .orElse("Desconocido"));
+
+            for (Compra.DetalleCompra d : c.getDetalle()) {
+                List<ProveedorProducto> lista =
+                        resultado.computeIfAbsent(d.getProductoId(), k -> new ArrayList<>());
+                double cant = d.getCantidad() == null ? 0 : d.getCantidad();
+
+                int pos = -1;
+                for (int i = 0; i < lista.size(); i++) {
+                    if (lista.get(i).proveedorId().equals(provId)) { pos = i; break; }
+                }
+
+                if (pos == -1) {
+                    // Primera vez que aparece = su compra más reciente: de ahí salen precio y fecha
+                    lista.add(new ProveedorProducto(provId, nombre, d.getPrecioCompra(), c.getFecha(), cant));
+                } else {
+                    // Ya estaba: solo se suma la cantidad, precio y fecha se quedan
+                    ProveedorProducto a = lista.get(pos);
+                    lista.set(pos, new ProveedorProducto(
+                            a.proveedorId(), a.proveedor(), a.precio(), a.fecha(), a.cantidad() + cant));
+                }
+            }
+        }
+        return resultado;
+    }
+
+    /** id del producto -> nombre del proveedor de su compra más reciente. */
+    public Map<String, String> proveedorPorProducto() {
+        Map<String, String> resultado = new HashMap<>();
+        for (Map.Entry<String, List<ProveedorProducto>> e : proveedoresPorProducto().entrySet()) {
+            if (!e.getValue().isEmpty()) {
+                resultado.put(e.getKey(), e.getValue().get(0).proveedor());
+            }
+        }
+        return resultado;
     }
 }

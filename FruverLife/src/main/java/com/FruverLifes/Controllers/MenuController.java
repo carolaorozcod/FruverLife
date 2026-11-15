@@ -5,19 +5,18 @@ import com.FruverLifes.Model.Persona;
 import com.FruverLifes.Model.Producto;
 import com.FruverLifes.Model.RegistroDesperdicio;
 import com.FruverLifes.Model.Venta;
-import com.FruverLifes.Service.ClienteService;
-import com.FruverLifes.Service.GestorUsuarioService;
-import com.FruverLifes.Service.Productoservice;
-import com.FruverLifes.Service.ProveedorService;
-import com.FruverLifes.Service.RegistroDesperdicioService;
-import com.FruverLifes.Service.VentaService;
+import com.FruverLifes.Service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +38,10 @@ public class MenuController {
     private VentaService ventaService;
     @Autowired
     private ProveedorService proveedorService;
+    @Autowired
+    private InventarioService inventarioService;
+    @Autowired
+    private InformeProveedoresService informeProveedoresService;
 
     // ---------- GERENTE ----------
     @GetMapping("/gerente")
@@ -84,13 +87,33 @@ public class MenuController {
     public String verInformeMercancia(Model model) {
         List<Producto> productos = productoService.listarTodos();
 
-        double totalStock = productos.stream()
-                .filter(p -> p.getCantidad() != null)
-                .mapToDouble(Producto::getCantidad)
+        // id del producto -> todos sus proveedores (con precio y cantidad ingresada).
+        // Si el producto no aparece aquí, nunca se le ha ingresado mercancía.
+        Map<String, List<InventarioService.ProveedorProducto>> proveedoresPorProducto =
+                inventarioService.proveedoresPorProducto();
+
+        // AGOTADO: tiene proveedores, pero ya no le queda cantidad
+        long agotados = productos.stream()
+                .filter(p -> proveedoresPorProducto.containsKey(p.getId())
+                        && (p.getCantidad() == null || p.getCantidad() <= 0))
+                .count();
+
+        // SIN STOCK: nunca se le ha ingresado mercancía
+        long sinStock = productos.stream()
+                .filter(p -> !proveedoresPorProducto.containsKey(p.getId()))
+                .count();
+
+        // Valor del inventario al costo: cantidad × último precio de compra
+        double valorInventario = productos.stream()
+                .filter(p -> p.getCantidad() != null && p.getPrecioCompra() != null)
+                .mapToDouble(p -> p.getCantidad() * p.getPrecioCompra())
                 .sum();
 
         model.addAttribute("productos", productos);
-        model.addAttribute("totalStock", totalStock);
+        model.addAttribute("proveedoresPorProducto", proveedoresPorProducto);
+        model.addAttribute("agotados", agotados);
+        model.addAttribute("sinStock", sinStock);
+        model.addAttribute("valorInventario", valorInventario);
         model.addAttribute("contenido", "Informeme");
 
         return "layout/PlantillaGerente";
@@ -200,6 +223,8 @@ public class MenuController {
         model.addAttribute("compra", compra);
         model.addAttribute("proveedores", proveedoresActivos);
         model.addAttribute("productos", productoService.listarTodos());
+        // Todos los proveedores de cada producto (con su último precio y cantidad ingresada)
+        model.addAttribute("proveedoresPorProducto", inventarioService.proveedoresPorProducto());
 
         return "layout/plantillaAdministrador";
     }
@@ -235,15 +260,10 @@ public class MenuController {
     @GetMapping("/ventas")
     public String ventas(HttpSession session, Model model) {
 
-        model.addAttribute(
-                "usuario",
-                session.getAttribute("usuarioLogueado")
-        );
+        model.addAttribute("usuario", session.getAttribute("usuarioLogueado"));
 
         // Consultar el cliente seleccionado
-        Persona clienteSesion =
-                (Persona) session.getAttribute("clienteActual");
-
+        Persona clienteSesion = (Persona) session.getAttribute("clienteActual");
         Persona cliente = clienteSesion;
 
         if (clienteSesion != null) {
@@ -261,12 +281,9 @@ public class MenuController {
 
         model.addAttribute("cliente", cliente);
 
-        model.addAttribute("cliente", cliente);
-
         // Recuperar carrito
         List<Venta.DetalleVenta> carrito =
-                (List<Venta.DetalleVenta>)
-                        session.getAttribute("carrito");
+                (List<Venta.DetalleVenta>) session.getAttribute("carrito");
 
         if (carrito == null) {
             carrito = new ArrayList<>();
@@ -274,13 +291,24 @@ public class MenuController {
 
         model.addAttribute("carrito", carrito);
 
-        // Calcular subtotal
-        double total = 0;
-
+        // Subtotal del carrito
+        double subtotal = 0;
         for (Venta.DetalleVenta d : carrito) {
-            total += d.getSubtotal();
+            subtotal += d.getSubtotal();
         }
 
+        // Descuento del 25 % si el cliente es usuario del sistema
+        boolean esUsuarioSistema = ventaService.esUsuarioDelSistema(cliente);
+        double descuentoUsuario = esUsuarioSistema
+                ? ventaService.calcularDescuentoUsuario(subtotal)
+                : 0;
+
+        // Total a pagar antes de redimir puntos
+        double total = subtotal - descuentoUsuario;
+
+        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("esUsuarioSistema", esUsuarioSistema);
+        model.addAttribute("descuentoUsuario", descuentoUsuario);
         model.addAttribute("total", total);
 
         // DATOS DEL PROGRAMA DE PUNTOS
@@ -290,40 +318,24 @@ public class MenuController {
             puntosDisponibles = cliente.getPuntos();
         }
 
-        // Descuento máximo del 30%
+        // Descuento máximo del 30 % (sobre el total ya con el descuento de usuario)
         double maximoDescuento = Math.floor(total * 0.30);
 
         // Máximo de puntos que puede redimir
         int maximoPuntosRedimibles = 0;
 
         if (cliente != null && puntosDisponibles >= 10000) {
-
-            maximoPuntosRedimibles = (int) Math.min(
-                    puntosDisponibles,
-                    maximoDescuento
-            );
+            maximoPuntosRedimibles = (int) Math.min(puntosDisponibles, maximoDescuento);
         }
 
-        model.addAttribute(
-                "puntosDisponibles",
-                puntosDisponibles
-        );
-
-        model.addAttribute(
-                "maximoDescuento",
-                maximoDescuento
-        );
-
-        model.addAttribute(
-                "maximoPuntosRedimibles",
-                maximoPuntosRedimibles
-        );
+        model.addAttribute("puntosDisponibles", puntosDisponibles);
+        model.addAttribute("maximoDescuento", maximoDescuento);
+        model.addAttribute("maximoPuntosRedimibles", maximoPuntosRedimibles);
 
         model.addAttribute("contenido", "Ventas");
 
         return "layout/PlantillaCajero";
     }
-
 
     @GetMapping("/precio")
     public String verificar(HttpSession session, Model model) {
@@ -345,4 +357,36 @@ public class MenuController {
 
         return "layout/PlantillaCajero";
     }
+
+    // En la sección GERENTE (junto a /informedes e /informemer):
+    @GetMapping("/informeprov")
+    public String informeProveedores(@RequestParam(required = false) String mes,
+                                     @RequestParam(required = false) String proveedor,
+                                     HttpSession session, Model model) {
+
+        Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
+        if (usuario == null) return "redirect:/auth/login";
+
+        ZoneId zona = ZoneId.of("America/Bogota");
+        YearMonth ym;
+        try {
+            ym = (mes == null || mes.isBlank()) ? YearMonth.now(zona) : YearMonth.parse(mes);
+        } catch (DateTimeParseException e) {
+            ym = YearMonth.now(zona);
+        }
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("mes", ym.toString());                       // ej. 2026-11
+        model.addAttribute("informe", informeProveedoresService.generar(ym));
+
+        // Detalle de un proveedor (cuando se hace clic en una fila)
+        if (proveedor != null && !proveedor.isBlank()) {
+            model.addAttribute("proveedorSel", proveedor);
+            model.addAttribute("comprasProveedor", informeProveedoresService.detalle(proveedor, ym));
+        }
+
+        model.addAttribute("contenido", "InformeProv");
+        return "layout/PlantillaGerente";
+    }
+
 }
