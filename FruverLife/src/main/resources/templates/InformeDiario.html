@@ -11,13 +11,20 @@
             <div class="informe-header-card">
                 <div>
                     <h1>Informe Diario</h1>
-                    <p class="subtitulo-informe">Ventas registradas del día</p>
+                    <p class="subtitulo-informe"
+                       th:text="'Ventas registradas el ' + ${#temporals.format(fecha, 'dd/MM/yyyy')}">Ventas registradas del día</p>
                 </div>
 
                 <button class="btn-print" onclick="window.print()">
                     IMPRIMIR REPORTE
                 </button>
             </div>
+
+            <form method="get" th:action="@{/menu/informe-diario}">
+                <label>Fecha:</label>
+                <input type="date" name="fecha" th:value="${fecha}">
+                <button type="submit">VER</button>
+            </form>
 
             <div class="informe-summary-boxes">
 
@@ -76,7 +83,7 @@
 
                 <tr th:if="${#lists.isEmpty(ventas)}">
                     <td colspan="5" class="sin-registros">
-                        No hay ventas registradas hoy
+                        No hay ventas registradas en esta fecha
                     </td>
                 </tr>
                 </tbody>

@@ -8,12 +8,14 @@ import com.FruverLifes.Model.Venta;
 import com.FruverLifes.Service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
@@ -120,15 +122,19 @@ public class MenuController {
     }
 
     @GetMapping("/informe-diario")
-    public String informeDiario(HttpSession session, Model model) {
+    public String informeDiario(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            HttpSession session, Model model) {
 
         Persona usuario = (Persona) session.getAttribute("usuarioLogueado");
-
         if (usuario == null) {
             return "redirect:/auth/login";
         }
 
-        List<Venta> ventas = ventaService.listarVentasDelDia();
+        LocalDate dia = (fecha != null) ? fecha : LocalDate.now(ZoneId.of("America/Bogota"));
+        List<Venta> ventas = ventaService.listarVentasDelDia(dia);
+        model.addAttribute("fecha", dia);
 
         double totalDia = ventas.stream()
                 .filter(v -> v.getTotal() != null)

@@ -264,24 +264,16 @@ public class VentaService {
 
 
     // LISTAR VENTAS DEL DIA
+    private static final ZoneId ZONA = ZoneId.of("America/Bogota");
+
     public List<Venta> listarVentasDelDia() {
+        return listarVentasDelDia(LocalDate.now(ZONA));
+    }
 
-        ZoneId zona = ZoneId.systemDefault();
-
-        Date inicio = Date.from(
-                LocalDate.now()
-                        .atStartOfDay(zona)
-                        .toInstant());
-
-        Date fin = Date.from(
-                LocalDate.now()
-                        .plusDays(1)
-                        .atStartOfDay(zona)
-                        .toInstant());
-
-        return ventaRepository.findByFechaBetween(
-                inicio,
-                fin);
+    public List<Venta> listarVentasDelDia(LocalDate dia) {
+        Date inicio = Date.from(dia.atStartOfDay(ZONA).toInstant());
+        Date fin = Date.from(dia.plusDays(1).atStartOfDay(ZONA).toInstant());
+        return ventaRepository.findByFechaBetween(inicio, fin);
     }
 
 
