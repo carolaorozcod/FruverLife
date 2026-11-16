@@ -148,6 +148,10 @@ public class MenuController {
         for (Venta v : ventas) {
             if (v.getClienteId() != null && !clientes.containsKey(v.getClienteId())) {
                 Persona c = clienteService.buscarPorId(v.getClienteId());
+                if (c == null) {
+                    // usuarios del sistema (gerentes, cajeros, administradores) que compran como clientes
+                    c = gestorUsuarioService.buscarPorId(v.getClienteId());
+                }
                 clientes.put(v.getClienteId(), c != null ? c.getNombre() : "Desconocido");
             }
             if (v.getUsuarioId() != null && !cajeros.containsKey(v.getUsuarioId())) {
