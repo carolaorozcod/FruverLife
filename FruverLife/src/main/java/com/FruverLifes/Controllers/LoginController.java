@@ -67,7 +67,7 @@ public class LoginController {
                 // Crear cookie con el JWT
                 Cookie jwtCookie = new Cookie("JWT", token);
                 jwtCookie.setHttpOnly(true);
-                jwtCookie.setSecure(false); // En localhost usamos false
+                jwtCookie.setSecure(true); // En localhost usamos false
                 jwtCookie.setPath("/");
                 jwtCookie.setMaxAge(60 * 60); // 1 hora
 
@@ -101,7 +101,7 @@ public class LoginController {
         // Eliminar cookie JWT
         Cookie jwtCookie = new Cookie("JWT", "");
         jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(false);
+        jwtCookie.setSecure(true);
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(0);
 
